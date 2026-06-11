@@ -19,6 +19,24 @@ export interface UserInfo {
   status: '在线' | '离线' // 状态
 }
 
+/** 用户管理列表项 */
+export interface UserManageItem {
+  id: number
+  username: string
+  email: string
+  role: string
+  status: string
+  createTime?: string
+}
+
+/** 用户注册参数 */
+export interface UserRegisterParams {
+  username: string
+  password: string
+  email: string
+  role?: string
+}
+
 // ==================== 统计数据相关 ====================
 
 /** 月度统计数据（对应 Page2 的柱状图数据） */

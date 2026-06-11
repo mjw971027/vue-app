@@ -204,6 +204,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { Search, Plus, Delete, RefreshLeft, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../api/request'
+import { getToken } from '../utils/auth'
 import ComponentsCreate from './ComponentsCreate.vue'
 
 // 搜索表单
@@ -246,10 +247,15 @@ const createForm = reactive({
   programName: ''
 })
 
-/** 格式化日期 */
+/** 格式化日期：转为 Date 后输出 YYYY-MM-DD */
 const formatDate = (date: string | null) => {
   if (!date) return ''
-  return date.substring(0, 10)
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return date.substring(0, 10)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /** 获取公司列表 */
@@ -459,19 +465,15 @@ const handleRetract = async () => {
   }
 }
 
-/** 打印 */
+/** 打印（带上 token） */
 const handlePrint = () => {
   if (!currentRow.value) {
     ElMessage.warning('请选择一条数据进行打印')
     return
   }
 
-  if (currentRow.value.maStatus !== '03') {
-    ElMessage.warning('只有通过审批才能生成pdf')
-    return
-  }
-
-  window.open(`/api/components/printPdf?billNo=${currentRow.value.billNo}`)
+  const token = getToken()
+  window.open(`/api/components/printPdf?billNo=${currentRow.value.billNo}&token=${encodeURIComponent(token || '')}`)
 }
 
 /** 查看详情 */

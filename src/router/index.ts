@@ -15,7 +15,7 @@
 // createWebHistory — 使用 HTML5 History API（无 # 号的路由模式）
 import { createRouter, createWebHistory } from 'vue-router'
 // 导入 Token 管理工具
-import { isAuthenticated } from '../utils/auth'
+import { isAuthenticated, isAdmin } from '../utils/auth'
 
 // 导入各个页面组件（懒加载可改为 () => import('...') 以提升首屏速度）
 
@@ -24,6 +24,7 @@ import Page1 from '../views/Page1.vue' // 页面一：基础信息展示
 import Page2 from '../views/Page2.vue' // 页面二：数据统计分析
 import Page3 from '../views/Page3.vue' // 页面三：系统设置管理
 import Page4 from '../views/Page4.vue' // 页面四：工装申请管理
+import UserManage from '../views/UserManage.vue' // 用户管理
 import Login from '../views/Login.vue' // 登录页面
 
 /**
@@ -95,6 +96,14 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
 
+    // 用户管理（需要认证 + ADMIN 角色）
+    {
+      path: '/users',
+      name: 'UserManage',
+      component: UserManage,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+
     // 捕获所有未定义的路由，跳转到首页
     {
       path: '/:pathMatch(.*)*',
@@ -120,16 +129,24 @@ router.beforeEach((to, from, next) => {
 
   // 检查路由是否需要认证
   if (to.meta.requiresAuth) {
-    if (isLoggedIn) {
-      // 已登录，允许访问
-      next()
-    } else {
+    if (!isLoggedIn) {
       // 未登录，跳转到登录页，并保存目标路径
       next({
         path: '/login',
         query: { redirect: to.fullPath }
       })
+      return
     }
+
+    // 检查是否需要 ADMIN 角色
+    if (to.meta.requiresAdmin && !isAdmin()) {
+      // 非 ADMIN 用户，跳转到首页并提示
+      next('/')
+      return
+    }
+
+    // 已登录且有权限，允许访问
+    next()
   } else {
     // 不需要认证（如登录页），直接放行
     next()

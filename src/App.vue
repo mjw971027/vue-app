@@ -18,9 +18,9 @@
  * - 显示当前 Token
  */
 import { useRouter, useRoute } from 'vue-router'
-import { isAuthenticated, getToken, getUserInfoFromToken } from './utils/auth'
+import { isAuthenticated, getToken, getUserInfoFromToken, isAdmin, removeToken } from './utils/auth'
 import { logout } from './api/auth'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -29,10 +29,13 @@ const isLoggedIn = ref(false)
 const showTokenModal = ref(false)  // 控制 Token 弹窗显示
 const tokenInfo = ref('')          // Token 信息
 const activeIndex = ref('/')       // 当前激活的菜单项
+const isAdminUser = ref(false)     // 是否为管理员
+const isLoginPage = computed(() => route.path === '/login')
 
 /** 检查登录状态 */
 const checkAuth = () => {
   isLoggedIn.value = isAuthenticated()
+  isAdminUser.value = isAdmin()
 }
 
 // 初始检查
@@ -46,15 +49,20 @@ watch(() => route.path, (newPath) => {
 
 /** 退出登录 */
 const handleLogout = async () => {
+  // 1. 先调用后端退出接口（响应也返回 token，但我们已退出不需要处理）
   try {
     await logout()
-    ElMessage.success('已退出登录')
   } catch {
-    ElMessage.warning('后端退出失败，但已清除本地登录状态')
-  } finally {
-    isLoggedIn.value = false
-    router.push('/login')
+    // API 调用失败继续执行
   }
+
+  // 2. 清除本地状态
+  removeToken()
+  isLoggedIn.value = false
+  isAdminUser.value = false
+
+  // 3. 跳转到登录页
+  window.location.href = '/login'
 }
 
 /** 显示 Token 信息 */
@@ -98,62 +106,77 @@ const handleMenuSelect = (index: string) => {
 
 <template>
   <div id="app">
-    <!-- 顶部导航栏 -->
-    <el-menu
-      mode="horizontal"
-      :default-active="activeIndex"
-      class="top-nav"
-      @select="handleMenuSelect"
-    >
-      <!-- 品牌 Logo -->
-      <el-menu-item index="/" class="logo-item">
-        <el-icon><HomeFilled /></el-icon>
-        MyVueApp
-      </el-menu-item>
-
-      <!-- 导航链接 -->
-      <el-menu-item index="/page1">
-        <el-icon><Document /></el-icon>
-        页面一
-      </el-menu-item>
-      <el-menu-item index="/page2">
-        <el-icon><DataAnalysis /></el-icon>
-        页面二
-      </el-menu-item>
-      <el-menu-item index="/page3">
-        <el-icon><Setting /></el-icon>
-        页面三
-      </el-menu-item>
-      <el-menu-item index="/page4">
-        <el-icon><Files /></el-icon>
-        工装申请
-      </el-menu-item>
-
-      <!-- 右侧按钮组 -->
-      <div class="nav-right">
-        <template v-if="isLoggedIn">
-          <el-button type="primary" link @click="showTokenInfo">
-            <el-icon><Key /></el-icon>
-            Token
-          </el-button>
-          <el-button type="danger" link @click="handleLogout">
-            <el-icon><SwitchButton /></el-icon>
-            退出
-          </el-button>
-        </template>
-        <template v-else>
-          <el-menu-item index="/login">
-            <el-icon><User /></el-icon>
-            登录
+    <!-- 侧边栏布局（非登录页面） -->
+    <template v-if="!isLoginPage">
+      <div class="app-layout">
+        <aside class="app-sidebar">
+        <el-menu
+          mode="vertical"
+          :default-active="activeIndex"
+          class="sidebar-menu"
+          @select="handleMenuSelect"
+        >
+          <!-- 品牌 Logo -->
+          <el-menu-item index="/" class="logo-item">
+            <el-icon><HomeFilled /></el-icon>
+            <span>MyVueApp</span>
           </el-menu-item>
-        </template>
-      </div>
-    </el-menu>
 
-    <!-- 主内容区 -->
-    <main class="main-content">
-      <router-view />
-    </main>
+          <el-divider class="menu-divider" />
+
+          <!-- 导航链接 -->
+          <el-menu-item index="/page1">
+            <el-icon><Document /></el-icon>
+            <span>页面一</span>
+          </el-menu-item>
+          <el-menu-item index="/page2">
+            <el-icon><DataAnalysis /></el-icon>
+            <span>页面二</span>
+          </el-menu-item>
+          <el-menu-item index="/page3">
+            <el-icon><Setting /></el-icon>
+            <span>页面三</span>
+          </el-menu-item>
+          <el-menu-item index="/page4">
+            <el-icon><Files /></el-icon>
+            <span>工装申请</span>
+          </el-menu-item>
+          <el-menu-item v-if="isAdminUser" index="/users">
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </el-menu-item>
+        </el-menu>
+
+        <!-- 侧边栏底部按钮组 -->
+        <div class="sidebar-footer">
+          <template v-if="isLoggedIn">
+            <el-button type="primary" link class="sidebar-btn" @click="showTokenInfo">
+              <el-icon><Key /></el-icon>
+              <span>Token</span>
+            </el-button>
+            <el-button type="danger" link class="sidebar-btn" @click="handleLogout">
+              <el-icon><SwitchButton /></el-icon>
+              <span>退出</span>
+            </el-button>
+          </template>
+          <template v-else>
+            <el-menu-item index="/login">
+              <el-icon><User /></el-icon>
+              <span>登录</span>
+            </el-menu-item>
+          </template>
+        </div>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="main-content">
+        <router-view />
+      </main>
+      </div>
+    </template>
+
+    <!-- 登录页面：全屏无侧边栏 -->
+    <router-view v-else />
 
     <!-- Token 信息弹窗 -->
     <el-dialog
@@ -187,36 +210,96 @@ body {
 
 #app { min-height: 100vh; }
 
-/* ===== 顶部导航栏 ===== */
-.top-nav {
-  position: sticky;
+/* ===== 侧边栏 ===== */
+.app-sidebar {
+  width: 220px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #e8ecf4;
+  position: fixed;
+  left: 0;
   top: 0;
   z-index: 100;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
 }
 
 .logo-item {
   font-weight: 700;
   font-size: 16px;
   color: #6366f1 !important;
+  height: 56px !important;
+  line-height: 56px !important;
 }
 
-.nav-right {
-  margin-left: auto;
+.logo-item .el-icon {
+  font-size: 20px;
+}
+
+.menu-divider {
+  margin: 0 12px;
+  border-color: #f0f0f0;
+}
+
+.sidebar-menu {
+  flex: 1;
+  border-right: none !important;
+  padding-top: 0;
+}
+
+.sidebar-menu .el-menu-item {
+  height: 44px;
+  line-height: 44px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.sidebar-menu .el-menu-item.is-active {
+  background: #eeefff !important;
+  color: #6366f1 !important;
+}
+
+.sidebar-menu .el-menu-item:hover {
+  background: #f5f6ff !important;
+}
+
+/* ===== 侧边栏底部 ===== */
+.sidebar-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-footer .sidebar-btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.sidebar-footer .sidebar-btn:hover {
+  background: #f5f6ff;
+}
+
+.sidebar-footer .el-menu-item {
+  height: 40px;
+  line-height: 40px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
 /* ===== 主内容区 ===== */
 .main-content {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  min-height: calc(100vh - 60px); /* 减去导航栏高度 */
+  margin-left: 220px;
+  flex: 1;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }

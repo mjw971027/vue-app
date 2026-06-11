@@ -154,3 +154,23 @@ export const getUserInfoFromToken = (): any => {
 
   return parseJwtPayload(token)
 }
+
+/**
+ * 获取当前用户的角色（每次从 JWT 重新解析，避免缓存问题）
+ * @returns 角色字符串，如 "ADMIN" / "USER"，未登录返回 null
+ */
+export const getUserRole = (): string | null => {
+  const info = getUserInfoFromToken()
+  return info?.role || null
+}
+
+/**
+ * 检查当前用户是否为 ADMIN
+ * - 支持 "ADMIN" / "ROLE_ADMIN" / "admin" 等多种格式
+ */
+export const isAdmin = (): boolean => {
+  const role = getUserRole()
+  if (!role) return false
+  const upper = role.toUpperCase()
+  return upper === 'ADMIN' || upper === 'ROLE_ADMIN'
+}
