@@ -1,0 +1,53 @@
+<!--
+  ============================================================
+  文件：index.html
+  作用：Vue 应用的 HTML 入口文件（Entry HTML）
+  说明：
+    - 这是整个 SPA（单页面应用）的唯一 HTML 文件
+    - Vite 开发服务器会直接提供这个文件
+    - Vue 应用通过 main.ts 挂载到 #app 节点上
+    - 构建时 Vite 会自动注入打包后的 CSS/JS 引用
+  ============================================================
+-->
+
+<!-- DOCTYPE 声明：告诉浏览器这是 HTML5 文档 -->
+<!doctype html>
+
+<!-- html 根标签，lang="en" 表示页面主要语言为英语（影响无障碍朗读和 SEO） -->
+<html lang="en">
+  <head>
+    <!-- 字符编码：UTF-8（支持中文、emoji 等所有 Unicode 字符） -->
+    <meta charset="UTF-8" />
+
+    <!-- 网站图标（Favicon）：使用 SVG 格式（矢量，高清且体积小）
+         浏览器会自动在标签页上显示这个图标 -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Viewport 设置：移动端适配的关键配置
+         width=device-width — 视口宽度 = 设备宽度（不缩放）
+         initial-scale=1.0   — 初始缩放比例 1:1（不自动放大） -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- 浏览器标签页标题（会显示在浏览器标签上） -->
+    <title>my-vue-app</title>
+  </head>
+  <body>
+    <!--
+      Vue 挂载点（Mount Point）
+      - Vue 应用会通过 createApp(App).mount("#app") 挂载到这里
+      - 挂载前：这个 div 是空的
+      - 挂载后：Vue 会把虚拟 DOM 渲染成真实 DOM 并插入这里
+      - 构建时 Vite 会自动在这个 div 后注入打包后的 <script> 和 <link> 标签
+    -->
+    <div id="app"></div>
+
+    <!--
+      Vue 入口脚本（ES Module 格式）
+      - type="module" 告诉浏览器这是一个 ES Module（支持 import/export）
+      - src="/src/main.ts" — Vite 开发服务器会拦截这个请求，
+        实时编译 .ts/.vue 文件并返回
+      - 生产构建后，Vite 会自动将这行替换为打包后的 JS 文件路径
+    -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

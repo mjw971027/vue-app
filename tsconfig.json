@@ -1,0 +1,25 @@
+/**
+ * ============================================================
+ * 文件：tsconfig.json
+ * 作用：TypeScript 根配置文件（项目引用模式）
+ * 说明：
+ *   - 这是一个"引用型"配置，本身不包含编译选项
+ *   - 通过 references 引用两个子配置：
+ *       1. tsconfig.app.json — 应用源码（src/）
+ *       2. tsconfig.node.json — Node 环境（vite.config.ts）
+ *   - 这种拆分方式让 vue-tsc 可以分别检查不同环境的代码
+ * ============================================================
+ */
+
+{
+  /* files: [] — 根配置不编译任何文件，只做引用管理 */
+  "files": [],
+
+  /* references — 项目引用（Project References）
+       告诉 TS："这个项目的实际配置在这两个文件里"
+       配合 vue-tsc -b（build mode）可实现增量类型检查，速度更快 */
+  "references": [
+    { "path": "./tsconfig.app.json" },  /* 应用源码配置 */
+    { "path": "./tsconfig.node.json" }   /* Node 环境配置 */
+  ]
+}

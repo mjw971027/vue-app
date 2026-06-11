@@ -1,0 +1,52 @@
+/**
+ * ============================================================
+ * 文件：tsconfig.app.json
+ * 作用：应用源码的 TypeScript 配置（src/ 目录）
+ * 说明：
+ *   - 继承 @vue/tsconfig/tsconfig.dom.json（Vue 官方 DOM 环境预设）
+ *   - 只编译 src/ 目录下的 .ts/.tsx/.vue 文件
+ *   - 包含严格的 lint 规则，帮助在编译前发现潜在 bug
+ * ============================================================
+ */
+
+{
+  /* extends — 继承 Vue 官方 TS 配置预设
+       tsconfig.dom.json 包含：
+       - DOM 类型定义（document、window 等）
+       - ESNext 编译目标
+       - Vue 相关的类型检查配置 */
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+
+  /* compilerOptions — TypeScript 编译选项 */
+  "compilerOptions": {
+    /* 增量编译缓存文件路径（加快 vue-tsc -b 的二次编译速度） */
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
+    /* 自动引入 Vite 的客户端类型定义（import.meta.env 等） */
+    "types": ["vite/client"],
+
+    /* ========== Lint 规则（严格的代码检查）========== */
+
+    /* 禁止未使用的局部变量（有副作用的变量除外）
+       例如：const a = 1 但从未使用 → 报错 */
+    "noUnusedLocals": true,
+
+    /* 禁止未使用的函数参数
+       例如：function fn(a, b) { return a } → b 未使用 → 报错 */
+    "noUnusedParameters": true,
+
+    /* 仅允许使用"可擦除"的 TypeScript 语法
+       禁止：enum、namespace、parameter properties 等
+       这些语法在编译后会产生额外运行时代码
+       开启后让 TS 代码更接近纯 JS，更易迁移 */
+    "erasableSyntaxOnly": true,
+
+    /* 禁止 switch case 的"穿透"行为（fall-through）
+       即：case 中必须有 break/return/throw，否则报错
+       防止遗漏 break 导致的逻辑 bug */
+    "noFallthroughCasesInSwitch": true
+  },
+
+  /* include — 指定需要编译的文件范围 */
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+}

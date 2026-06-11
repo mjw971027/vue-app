@@ -1,0 +1,24 @@
+{
+  // 推荐安装的 VS Code 扩展
+  // 这些扩展可以提升 Vue 开发体验
+  "recommendations": [
+    // Vue 官方扩展
+    "Vue.volar",
+    // TypeScript 增强
+    "Vue.vscode-typescript-vue-plugin",
+    // 代码格式化
+    "esbenp.prettier-vscode",
+    // ESLint 代码检查
+    "dbaeumer.vscode-eslint",
+    // 自动导入
+    "antfu.iconify",
+    // 路径自动补全
+    "christian-kohler.path-intellisense",
+    // 代码格式化增强
+    "formulahendry.code-format",
+    // Git 增强
+    "eamodio.gitlens",
+    // 括号高亮
+    "coenraads.bracket-pair-colorizer-2"
+  ]
+}

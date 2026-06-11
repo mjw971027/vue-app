@@ -1,0 +1,85 @@
+# Vue 项目一键启动脚本
+
+这个目录包含了 Vue 项目的一键启动脚本，支持 Windows、Linux 和 macOS 系统。
+
+## 使用方法
+
+### Windows 用户
+双击运行 `start.bat` 文件，或者右键选择"以管理员身份运行"。
+
+### Linux/macOS 用户
+在终端中执行以下命令：
+```bash
+# 添加执行权限（首次使用时需要）
+chmod +x start.sh
+
+# 运行脚本
+./start.sh
+```
+
+## 脚本功能
+
+1. **自动检测依赖** - 检查 `node_modules` 是否存在，如果不存在则自动运行 `npm install`
+2. **启动开发服务器** - 运行 `npm run dev` 启动 Vite 开发服务器
+3. **错误提示** - 如果安装依赖失败，会给出友好的错误提示
+4. **跨平台支持** - 提供 Windows 批处理脚本和 Linux/macOS Shell 脚本
+
+## 注意事项
+
+- 确保你的电脑已经安装了 Node.js（建议版本 16 或以上）
+- 首次运行时会自动安装依赖，可能需要几分钟时间
+- 如果启动失败，请检查：
+  - Node.js 是否正确安装（运行 `node -v` 检查）
+  - 网络连接是否正常
+  - 端口 5173 是否被占用
+
+## 手动启动
+
+如果你想手动启动项目，可以运行以下命令：
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览生产版本
+npm run preview
+```
+
+## 项目信息
+
+- **项目名称**: my-vue-app
+- **开发服务器地址**: http://localhost:5173
+- **构建输出目录**: dist/
+- **技术栈**: Vue 3 + TypeScript + Vite
+
+## 故障排除
+
+### 问题 1: `npm install` 失败
+**解决方案**:
+- 检查网络连接
+- 清除 npm 缓存: `npm cache clean --force`
+- 删除 `node_modules` 和 `package-lock.json`，然后重新安装
+
+### 问题 2: 端口 5173 被占用
+**解决方案**:
+- 修改 `vite.config.ts` 中的端口配置
+- 或者终止占用端口的进程
+
+### 问题 3: 脚本无法运行（Linux/macOS）
+**解决方案**:
+```bash
+# 添加执行权限
+chmod +x start.sh
+
+# 如果遇到权限问题，使用 sudo
+sudo ./start.sh
+```
+
+---
+
+如有其他问题，请查看项目根目录的 `README.md` 文件或联系开发者。

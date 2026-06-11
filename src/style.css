@@ -1,0 +1,422 @@
+/**
+ * ============================================================
+ * 文件：src/style.css
+ * 作用：全局样式表（Global Stylesheet）
+ * 说明：
+ *   - 该文件在 main.ts 中通过 import "./style.css" 引入
+ *   - 没有 scoped 限制，样式会作用于整个应用
+ *   - 原本是 Vite 官方模板的样式，部分样式（如 #app、#center）是为 HelloWorld.vue 设计的
+ *   - 当前项目使用了自定义导航栏（App.vue），部分样式可能未被使用
+ * ============================================================
+ */
+
+/* ============================================================
+   CSS 自定义属性（Design Tokens / 设计令牌）
+   :root 选择器 — 定义全局 CSS 变量，整个文档都可访问
+   通过 var(--变量名) 的方式在任意地方使用
+   ============================================================ */
+
+:root {
+  /* ========== 颜色变量 ========== */
+
+  /* 正文文字颜色（中灰色） */
+  --text: #6b6375;
+  /* 标题文字颜色（近黑色） */
+  --text-h: #08060d;
+  /* 页面背景色（白色） */
+  --bg: #fff;
+  /* 边框颜色（浅灰色） */
+  --border: #e5e4e7;
+  /* 行内代码背景色（米白色） */
+  --code-bg: #f4f3ec;
+  /* 主题强调色/主色（紫色）— 用于链接、按钮等高亮元素 */
+  --accent: #aa3bff;
+  /* 强调色背景（紫色 10% 透明度）— 用于 tag、badge 背景 */
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  /* 强调色边框（紫色 50% 透明度）— 用于 focus 状态的边框 */
+  --accent-border: rgba(170, 59, 255, 0.5);
+  /* 社交按钮背景色（米白色 50% 透明度） */
+  --social-bg: rgba(244, 243, 236, 0.5);
+  /* 卡片/按钮悬停时的阴影效果（多层阴影实现立体感） */
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  /* ========== 字体变量 ========== */
+
+  /* 正文字体栈（系统默认 sans-serif） */
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  /* 标题字体栈（与正文相同，可独立修改） */
+  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
+  /* 等宽字体栈（用于代码、计数器） */
+  --mono: ui-monospace, Consolas, monospace;
+
+  /* ========== 基础排版设置 ========== */
+
+  /* font 简写：font-size/line-height font-family */
+  font: 18px/145% var(--sans);
+  /* 字符间距微调（0.18px） */
+  letter-spacing: 0.18px;
+  /* 告诉浏览器该页面支持浅色和深色模式（影响滚动条等系统 UI 颜色） */
+  color-scheme: light dark;
+  /* 文字颜色（使用变量） */
+  color: var(--text);
+  /* 背景颜色（使用变量） */
+  background: var(--bg);
+
+  /* ========== 字体渲染优化 ========== */
+
+  /* 禁止浏览器自动合成粗体/斜体（使用字体文件自带的变体） */
+  font-synthesis: none;
+  /* 优化文字可读性（启用连字、字距调整等，对 CJK 影响较小） */
+  text-rendering: optimizeLegibility;
+  /* WebKit 引擎：启用抗锯齿渲染（文字更平滑） */
+  -webkit-font-smoothing: antialiased;
+  /* Firefox macOS：启用抗锯齿渲染 */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ========== 响应式：平板及以下（≤1024px）========== */
+  @media (max-width: 1024px) {
+    /* 缩小基础字号，提升移动端阅读体验 */
+    font-size: 16px;
+  }
+}
+
+/**
+ * ============================================================
+ * 暗色模式（Dark Mode）支持
+ * ============================================================
+ * @media (prefers-color-scheme: dark)
+ *   - 检测用户操作系统的主题偏好
+ *   - 当用户开启了"深色模式"时，这里的样式会自动生效
+ *   - 通过重新定义 :root 中的 CSS 变量来实现主题切换
+ *   - 无需 JS，纯 CSS 实现
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 暗色模式下的颜色变量覆盖（所有变量名不变，值改为暗色） */
+
+    /* 正文文字：浅灰色（在深色背景上更易读） */
+    --text: #9ca3af;
+    /* 标题文字：近白色 */
+    --text-h: #f3f4f6;
+    /* 页面背景：深蓝灰色） */
+    --bg: #16171d;
+    /* 边框颜色：深灰色 */
+    --border: #2e303a;
+    /* 代码背景：深灰色 */
+    --code-bg: #1f2028;
+    /* 强调色：亮紫色（在深色背景上更醒目） */
+    --accent: #c084fc;
+    /* 强调色背景：亮紫色 15% 透明度 */
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    /* 强调色边框：亮紫色 50% 透明度 */
+    --accent-border: rgba(192, 132, 252, 0.5);
+    /* 社交按钮背景：深灰色 50% 透明度 */
+    --social-bg: rgba(47, 48, 58, 0.5);
+    /* 阴影：更深的黑色阴影（适配深色背景） */
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  /* 社交图标在暗色模式下反转颜色并增亮 */
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+    /* invert(1)  — 颜色完全反转（黑变白、白变黑） */
+    /* brightness(2) — 亮度提升 2 倍 */
+  }
+}
+
+/* ============================================================
+   全局元素样式
+   ============================================================ */
+
+/* body 重置：移除浏览器默认的 8px margin */
+body {
+  margin: 0;
+}
+
+/* ========== 标题样式 ========== */
+
+/* h1 和 h2 共用样式 */
+h1,
+h2 {
+  font-family: var(--heading);  /* 使用标题字体变量 */
+  font-weight: 500;             /* 中等粗细 */
+  color: var(--text-h);          /* 使用标题文字颜色变量 */
+}
+
+/* h1 大标题样式 */
+h1 {
+  font-size: 56px;              /* 大字号 */
+  letter-spacing: -1.68px;     /* 负字间距，大字更紧凑 */
+  margin: 32px 0;              /* 上下留白 32px */
+  /* 响应式：平板及以下，缩小字号和边距 */
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+
+/* h2 中标题样式 */
+h2 {
+  font-size: 24px;
+  line-height: 118%;             /* 行高 118% */
+  letter-spacing: -0.24px;     /* 字间距微调 */
+  margin: 0 0 8px;             /* 仅下方留白 8px */
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+
+/* 段落重置：移除浏览器默认的上下 margin */
+p {
+  margin: 0;
+}
+
+/* ========== 行内代码 & 计数器按钮共用样式 ========== */
+code,
+.counter {
+  font-family: var(--mono);     /* 等宽字体 */
+  display: inline-flex;          /* 行内 Flex，可设置 padding */
+  border-radius: 4px;
+  color: var(--text-h);         /* 标题色文字 */
+}
+
+/* 行内代码（<code> 标签）专用样式 */
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;            /* 内边距让背景色更明显 */
+  background: var(--code-bg);   /* 代码背景色（米白色） */
+}
+
+/* ========== 计数器按钮（HelloWorld.vue 中的 Count 按钮）========== */
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);         /* 紫色文字 */
+  background: var(--accent-bg); /* 紫色 10% 透明背景 */
+  border: 2px solid transparent; /* 透明边框（hover 时变色） */
+  transition: border-color 0.3s; /* 边框颜色变化有 0.3s 过渡 */
+  margin-bottom: 24px;
+
+  /* 鼠标悬停：显示紫色边框 */
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  /* 键盘聚焦（Tab 键）：显示紫色 outline（无障碍访问） */
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;       /* outline 与元素之间留 2px 空隙 */
+  }
+}
+
+/* ========== Hero 图片叠加区域（HelloWorld.vue）========== */
+.hero {
+  position: relative;           /* 建立定位上下文，供绝对定位的子元素参照 */
+
+  /* 三张图片共用：水平居中 */
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;           /* 逻辑属性：左右都设为 0（等价于 left:0; right:0） */
+    margin: 0 auto;            /* 水平居中 */
+  }
+
+  /* 底层图片（hero.png） */
+  .base {
+    width: 170px;
+    position: relative;         /* 相对定位 */
+    z-index: 0;                /* 最底层 */
+  }
+
+  /* Vue Logo 和 Vite Logo 共用：绝对定位 */
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  /* Vue Logo（中间层，3D 透视变换） */
+  .framework {
+    z-index: 1;                /* 中间层 */
+    top: 34px;
+    height: 28px;
+    /* 3D 变换：透视 + 旋转 + 缩放，实现"倾斜悬浮"效果 */
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg) scale(1.4);
+  }
+
+  /* Vite Logo（顶层，类似效果但不同参数） */
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg) scale(0.8);
+  }
+}
+
+/* ========== #app 根容器（原 Vite 模板样式，当前项目 App.vue 已覆盖）========== */
+#app {
+  width: 1126px;               /* 固定宽度 */
+  max-width: 100%;              /* 响应式：不超过视口 */
+  margin: 0 auto;              /* 水平居中 */
+  text-align: center;          /* 文字居中 */
+  border-inline: 1px solid var(--border); /* 左右边框（逻辑属性） */
+  min-height: 100svh;         /* 最小高度 = 100% 视口高度（svh 移动端更准确） */
+  display: flex;
+  flex-direction: column;      /* 纵向 Flex 布局 */
+  box-sizing: border-box;
+}
+
+/* ========== #center 中间内容区（HelloWorld.vue 使用）========== */
+#center {
+  display: flex;
+  flex-direction: column;      /* 纵向排列 */
+  gap: 25px;                  /* 子元素之间 25px 间距 */
+  place-content: center;       /* 等价于 align-content + justify-content 都居中 */
+  place-items: center;         /* 等价于 align-items + justify-items 都居中 */
+  flex-grow: 1;               /* 占满剩余空间 */
+
+  /* 响应式：平板及以下，调整内边距和间距 */
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+/* ============================================================
+   #next-steps 区域（HelloWorld.vue 使用）
+   包含"Documentation"和"Connect with us"两个卡片
+   ============================================================ */
+#next-steps {
+  display: flex;                  /* 横向排列两个卡片 */
+  border-top: 1px solid var(--border);
+  text-align: left;               /* 文字左对齐 */
+
+  /* 直接子 div（#docs 和 #social）平分宽度 */
+  & > div {
+    flex: 1 1 0;                /* flex-grow:1, flex-shrink:1, flex-basis:0 → 平分 */
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  /* 区块图标（SVG 图标） */
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  /* 响应式：平板及以下，改为纵向排列、居中对齐 */
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* ========== #docs 卡片（左侧）========== */
+#docs {
+  border-right: 1px solid var(--border);  /* 右侧分割线（与 #social 分隔） */
+
+  @media (max-width: 1024px) {
+    border-right: none;                /* 纵向排列时去掉右侧线 */
+    border-bottom: 1px solid var(--border); /* 改为底部分割线 */
+  }
+}
+
+/* ========== #next-steps 中的链接列表 ========== */
+#next-steps ul {
+  list-style: none;             /* 去除默认圆点 */
+  padding: 0;
+  display: flex;                /* 横向排列链接按钮 */
+  gap: 8px;
+  margin: 32px 0 0;
+
+  /* Vite/Vue Logo 图片高度 */
+  .logo {
+    height: 18px;
+  }
+
+  /* 每个链接按钮的样式 */
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);   /* 浅色背景 */
+    display: flex;                  /* Flex 让图标和文字横向居中 */
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;         /* 去除下划线 */
+    transition: box-shadow 0.3s;
+
+    /* 悬停时显示阴影（浮起效果） */
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    /* 链接内的小图标尺寸 */
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  /* 响应式：平板及以下 */
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;               /* 允许换行 */
+    justify-content: center;
+
+    /* 每个 li 占约 50% 宽度（减去 gap） */
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    /* 链接按钮占满 li 宽度，内容居中 */
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+/* ========== #spacer 底部占位区 ========== */
+#spacer {
+  height: 88px;                    /* 固定高度占位（原模板用于留出底部空间） */
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;                  /* 移动端缩小占位高度 */
+  }
+}
+
+/* ========== .ticks 装饰性分割线 ==========
+   在 HelloWorld.vue 中使用
+   通过 ::before 和 ::after 伪元素绘制左右两个小三角箭头
+   视觉效果：|-------<===>-------| 类型的分割线
+*/
+.ticks {
+  position: relative;
+  width: 100%;
+
+  /* 左右两个伪元素共用样式 */
+  &::before,
+  &::after {
+    content: "";                    /* 伪元素必须有 content */
+    position: absolute;
+    top: -4.5px;                  /* 向上偏移，与边框对齐 */
+    border: 5px solid transparent;  /* 5px 透明边框，只显示有颜色的一边 */
+  }
+
+  /* 左侧小三角（左边框有颜色，其余透明） */
+  &::before {
+    left: 0;
+    border-left-color: var(--border);  /* 只显示左边框颜色 → 形成左三角 */
+  }
+  /* 右侧小三角（右边框有颜色，其余透明） */
+  &::after {
+    right: 0;
+    border-right-color: var(--border); /* 只显示右边框颜色 → 形成右三角 */
+  }
+}
