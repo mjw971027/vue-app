@@ -4,6 +4,7 @@
  * 作用：用户管理相关 API 接口
  * 说明：
  *   - 用户列表、注册、编辑、删除
+ *   - 页面权限管理
  * ============================================================
  */
 
@@ -40,4 +41,31 @@ export function updateUser(id: number, params: Partial<UserManageItem>) {
  */
 export function deleteUser(id: number) {
   return del(`/user/${id}`)
+}
+
+// ==================== 页面权限 API ====================
+
+/**
+ * 获取当前登录用户的页面权限
+ * GET /api/user/permissions
+ */
+export function getCurrentPermissions() {
+  return get<string[]>('/user/permissions')
+}
+
+/**
+ * 获取指定用户的页面权限
+ * GET /api/user/permissions/{userId}
+ */
+export function getUserPermissions(userId: number) {
+  return get<string[]>(`/user/permissions/${userId}`)
+}
+
+/**
+ * 设置指定用户的页面权限
+ * PUT /api/user/permissions/{userId}
+ * body: { permissions: ["page1","page2"] }
+ */
+export function setUserPermissions(userId: number, permissions: string[]) {
+  return put(`/user/permissions/${userId}`, { permissions: permissions })
 }

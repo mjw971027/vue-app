@@ -20,7 +20,7 @@ import { useRouter, useRoute } from 'vue-router'
 // 导入登录 API 函数
 import { login } from '../api/auth'
 // 导入 Token 管理工具
-import { isAuthenticated } from '../utils/auth'
+import { isAuthenticated, refreshPermissions } from '../utils/auth'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 // 导入图标组件
@@ -78,6 +78,9 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
         // 登录成功
         ElMessage.success('登录成功')
         window.console.log('登录成功', response.data)
+
+        // 刷新页面权限
+        await refreshPermissions()
 
         // 跳转到首页或重定向页面
         const redirect = route.query.redirect as string || '/'
@@ -160,6 +163,11 @@ if (isAuthenticated()) {
           </el-button>
         </el-form-item>
       </el-form>
+
+      <div class="login-footer">
+        没有账号？
+        <el-button link type="primary" @click="router.push('/register')">立即注册</el-button>
+      </div>
     </el-card>
   </div>
 </template>
@@ -205,5 +213,12 @@ if (isAuthenticated()) {
 /* 表单项 */
 .el-form-item {
   margin-bottom: 20px;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #888;
 }
 </style>

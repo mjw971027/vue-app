@@ -174,3 +174,52 @@ export const isAdmin = (): boolean => {
   const upper = role.toUpperCase()
   return upper === 'ADMIN' || upper === 'ROLE_ADMIN'
 }
+
+// ==================== 页面权限管理 ====================
+
+const PERMISSIONS_KEY = 'pagePermissions'
+
+/** 可分配的页面列表（不含 /users，ADMIN 专属） */
+export const PAGE_PERMISSIONS = [
+  { key: 'page1', label: '页面一' },
+  { key: 'page2', label: '页面二' },
+  { key: 'page3', label: '页面三' },
+  { key: 'page4', label: '工装申请' },
+] as const
+
+/** 获取当前用户存储的页面权限 */
+export const getStoredPermissions = (): string[] => {
+  try {
+    const data = localStorage.getItem(PERMISSIONS_KEY)
+    return data ? JSON.parse(data) : []
+  } catch {
+    return []
+  }
+}
+
+/** 存储页面权限 */
+export const setPagePermissions = (permissions: string[]): void => {
+  localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(permissions))
+}
+
+/** 检查当前用户是否有权访问指定页面（ADMIN 始终有权限） */
+export const hasPagePermission = (pageKey: string): boolean => {
+  if (isAdmin()) return true
+  return getStoredPermissions().includes(pageKey)
+}
+
+/** 从 API 刷新当前用户的页面权限并存储 */
+export const refreshPermissions = async (): Promise<void> => {
+  try {
+    const { getCurrentPermissions } = await import('../api/userManage')
+    const res = await getCurrentPermissions()
+    setPagePermissions(res.data || [])
+  } catch {
+    setPagePermissions([])
+  }
+}
+
+/** 清除页面权限（退出登录时调用） */
+export const clearPermissions = (): void => {
+  localStorage.removeItem(PERMISSIONS_KEY)
+}

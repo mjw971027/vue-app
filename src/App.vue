@@ -18,7 +18,7 @@
  * - 显示当前 Token
  */
 import { useRouter, useRoute } from 'vue-router'
-import { isAuthenticated, getToken, getUserInfoFromToken, isAdmin, removeToken } from './utils/auth'
+import { isAuthenticated, getToken, getUserInfoFromToken, isAdmin, getStoredPermissions, removeToken, refreshPermissions, clearPermissions } from './utils/auth'
 import { logout } from './api/auth'
 import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -30,12 +30,31 @@ const showTokenModal = ref(false)  // 控制 Token 弹窗显示
 const tokenInfo = ref('')          // Token 信息
 const activeIndex = ref('/')       // 当前激活的菜单项
 const isAdminUser = ref(false)     // 是否为管理员
-const isLoginPage = computed(() => route.path === '/login')
+const pagePerms = ref<string[]>([]) // 当前用户页面权限
+const isAuthPage = computed(() => ['/login', '/register'].includes(route.path))
+const currentUsername = ref('')     // 当前登录用户名
 
-/** 检查登录状态 */
+/** 检查当前用户是否有权访问页面（响应式） */
+const hasPerm = (key: string) => {
+  if (isAdminUser.value) return true
+  return pagePerms.value.includes(key)
+}
+
+/** 从 JWT 获取当前用户名 */
+const getUsername = () => {
+  const info = getUserInfoFromToken()
+  return info?.sub || info?.username || ''
+}
+
+/** 检查登录状态并刷新权限 */
 const checkAuth = () => {
   isLoggedIn.value = isAuthenticated()
   isAdminUser.value = isAdmin()
+  currentUsername.value = isLoggedIn.value ? getUsername() : ''
+  pagePerms.value = isLoggedIn.value ? getStoredPermissions() : []
+  if (isLoggedIn.value) {
+    refreshPermissions().then(() => { pagePerms.value = getStoredPermissions() })
+  }
 }
 
 // 初始检查
@@ -58,8 +77,11 @@ const handleLogout = async () => {
 
   // 2. 清除本地状态
   removeToken()
+  clearPermissions()
   isLoggedIn.value = false
   isAdminUser.value = false
+  currentUsername.value = ''
+  pagePerms.value = []
 
   // 3. 跳转到登录页
   window.location.href = '/login'
@@ -107,7 +129,7 @@ const handleMenuSelect = (index: string) => {
 <template>
   <div id="app">
     <!-- 侧边栏布局（非登录页面） -->
-    <template v-if="!isLoginPage">
+    <template v-if="!isAuthPage">
       <div class="app-layout">
         <aside class="app-sidebar">
         <el-menu
@@ -124,20 +146,20 @@ const handleMenuSelect = (index: string) => {
 
           <el-divider class="menu-divider" />
 
-          <!-- 导航链接 -->
-          <el-menu-item index="/page1">
+          <!-- 导航链接（根据权限显示） -->
+          <el-menu-item v-if="hasPerm('page1')" index="/page1">
             <el-icon><Document /></el-icon>
             <span>页面一</span>
           </el-menu-item>
-          <el-menu-item index="/page2">
+          <el-menu-item v-if="hasPerm('page2')" index="/page2">
             <el-icon><DataAnalysis /></el-icon>
             <span>页面二</span>
           </el-menu-item>
-          <el-menu-item index="/page3">
+          <el-menu-item v-if="hasPerm('page3')" index="/page3">
             <el-icon><Setting /></el-icon>
             <span>页面三</span>
           </el-menu-item>
-          <el-menu-item index="/page4">
+          <el-menu-item v-if="hasPerm('page4')" index="/page4">
             <el-icon><Files /></el-icon>
             <span>工装申请</span>
           </el-menu-item>
@@ -150,6 +172,12 @@ const handleMenuSelect = (index: string) => {
         <!-- 侧边栏底部按钮组 -->
         <div class="sidebar-footer">
           <template v-if="isLoggedIn">
+            <div class="user-info">
+              <el-icon><User /></el-icon>
+              <span class="user-name">{{ currentUsername }}</span>
+              <el-tag v-if="isAdminUser" size="small" type="warning" effect="dark" round>ADMIN</el-tag>
+            </div>
+            <el-divider class="footer-divider" />
             <el-button type="primary" link class="sidebar-btn" @click="showTokenInfo">
               <el-icon><Key /></el-icon>
               <span>Token</span>
@@ -271,6 +299,32 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #303133;
+}
+
+.user-info .el-icon {
+  font-size: 16px;
+  color: #909399;
+}
+
+.user-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer-divider {
+  margin: 4px 8px;
+  border-color: #f0f0f0;
 }
 
 .sidebar-footer .sidebar-btn {

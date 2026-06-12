@@ -15,7 +15,7 @@
 // createWebHistory — 使用 HTML5 History API（无 # 号的路由模式）
 import { createRouter, createWebHistory } from 'vue-router'
 // 导入 Token 管理工具
-import { isAuthenticated, isAdmin } from '../utils/auth'
+import { isAuthenticated, isAdmin, getStoredPermissions } from '../utils/auth'
 
 // 导入各个页面组件（懒加载可改为 () => import('...') 以提升首屏速度）
 
@@ -26,6 +26,7 @@ import Page3 from '../views/Page3.vue' // 页面三：系统设置管理
 import Page4 from '../views/Page4.vue' // 页面四：工装申请管理
 import UserManage from '../views/UserManage.vue' // 用户管理
 import Login from '../views/Login.vue' // 登录页面
+import Register from '../views/Register.vue' // 注册页面
 
 /**
  * 创建路由实例
@@ -56,6 +57,14 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
 
+    // 注册页（不需要认证）
+    {
+      path: '/register',
+      name: 'Register',
+      component: Register,
+      meta: { requiresAuth: false }
+    },
+
     // 首页（需要认证）
     {
       path: '/',
@@ -64,36 +73,36 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
 
-    // 页面一（需要认证）
+    // 页面一（需要认证 + 页面权限）
     {
       path: '/page1',
       name: 'Page1',
       component: Page1,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, pagePermission: 'page1' }
     },
 
-    // 页面二（需要认证）
+    // 页面二（需要认证 + 页面权限）
     {
       path: '/page2',
       name: 'Page2',
       component: Page2,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, pagePermission: 'page2' }
     },
 
-    // 页面三（需要认证）
+    // 页面三（需要认证 + 页面权限）
     {
       path: '/page3',
       name: 'Page3',
       component: Page3,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, pagePermission: 'page3' }
     },
 
-    // 页面四：工装申请管理（需要认证）
+    // 页面四：工装申请管理（需要认证 + 页面权限）
     {
       path: '/page4',
       name: 'Page4',
       component: Page4,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, pagePermission: 'page4' }
     },
 
     // 用户管理（需要认证 + ADMIN 角色）
@@ -121,8 +130,8 @@ router.beforeEach((to, from, next) => {
   // 检查用户是否已登录
   const isLoggedIn = isAuthenticated()
 
-  // 如果已登录，访问登录页时直接跳转到首页
-  if (to.path === '/login' && isLoggedIn) {
+  // 如果已登录，访问登录/注册页时直接跳转到首页
+  if (['/login', '/register'].includes(to.path) && isLoggedIn) {
     next('/')
     return
   }
@@ -140,9 +149,18 @@ router.beforeEach((to, from, next) => {
 
     // 检查是否需要 ADMIN 角色
     if (to.meta.requiresAdmin && !isAdmin()) {
-      // 非 ADMIN 用户，跳转到首页并提示
       next('/')
       return
+    }
+
+    // 检查页面权限（非 ADMIN 需要拥有页面权限）
+    const pagePerm = to.meta.pagePermission as string | undefined
+    if (pagePerm && !isAdmin()) {
+      const perms = getStoredPermissions()
+      if (!perms.includes(pagePerm)) {
+        next('/')
+        return
+      }
     }
 
     // 已登录且有权限，允许访问

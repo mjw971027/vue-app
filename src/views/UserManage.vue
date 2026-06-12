@@ -41,9 +41,10 @@
             {{ formatDate(row.createTime) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" align="center" fixed="right">
+        <el-table-column label="操作" width="240" align="center" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button link type="warning" size="small" @click="handlePermissions(row)">权限</el-button>
             <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -89,6 +90,38 @@
         </el-button>
       </template>
     </el-dialog>
+    <!-- 权限分配对话框 -->
+    <el-dialog
+      v-model="permDialogVisible"
+      title="分配页面权限"
+      width="450px"
+      :close-on-click-modal="false"
+    >
+      <template v-if="permUser">
+        <p style="margin-bottom: 16px; color: #606266;">
+          为 <strong>{{ permUser.username }}</strong> 分配可访问的页面：
+        </p>
+        <el-checkbox-group v-model="permChecked">
+          <el-checkbox
+            v-for="p in PAGE_PERMISSIONS"
+            :key="p.key"
+            :label="p.key"
+            :disabled="permUser.role === 'ADMIN'"
+          >
+            {{ p.label }}
+          </el-checkbox>
+        </el-checkbox-group>
+        <p v-if="permUser.role === 'ADMIN'" style="color: #999; font-size: 13px; margin-top: 8px;">
+          ADMIN 用户拥有所有页面权限，无需单独分配。
+        </p>
+      </template>
+      <template #footer>
+        <el-button @click="permDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="permSubmitting" @click="handleSavePermissions">
+          保存
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -99,7 +132,8 @@ import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import type { UserManageItem } from '../api/types'
-import { getUserList, registerUser, updateUser, deleteUser } from '../api/userManage'
+import { getUserList, registerUser, updateUser, deleteUser, getUserPermissions, setUserPermissions } from '../api/userManage'
+import { PAGE_PERMISSIONS } from '../utils/auth'
 
 // ====== 状态 ======
 const loading = ref(false)
@@ -109,6 +143,12 @@ const dialogVisible = ref(false)
 const isEditing = ref(false)
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
+
+// ====== 权限分配状态 ======
+const permDialogVisible = ref(false)
+const permSubmitting = ref(false)
+const permUser = ref<UserManageItem | null>(null)
+const permChecked = ref<string[]>([])
 
 // ====== 表单数据 ======
 const form = reactive({
@@ -168,7 +208,7 @@ const handleAddUser = () => {
   form.username = ''
   form.password = ''
   form.email = ''
-  form.role = '普通用户'
+  form.role = 'USER'
   dialogVisible.value = true
 }
 
@@ -231,6 +271,36 @@ const handleDelete = async (row: UserManageItem) => {
     if (err !== 'cancel') {
       ElMessage.error('删除用户失败')
     }
+  }
+}
+
+// ====== 打开权限分配对话框 ======
+const handlePermissions = async (row: UserManageItem) => {
+  permUser.value = row
+  if (row.role === 'ADMIN') {
+    permChecked.value = PAGE_PERMISSIONS.map(p => p.key)
+  } else {
+    permChecked.value = []
+    try {
+      const res = await getUserPermissions(row.id)
+      permChecked.value = res.data || []
+    } catch { /* 默认无权限 */ }
+  }
+  permDialogVisible.value = true
+}
+
+// ====== 保存权限分配 ======
+const handleSavePermissions = async () => {
+  if (!permUser.value) return
+  permSubmitting.value = true
+  try {
+    await setUserPermissions(permUser.value.id, permChecked.value)
+    ElMessage.success(`已更新 ${permUser.value.username} 的页面权限`)
+    permDialogVisible.value = false
+  } catch {
+    ElMessage.error('保存权限失败')
+  } finally {
+    permSubmitting.value = false
   }
 }
 
