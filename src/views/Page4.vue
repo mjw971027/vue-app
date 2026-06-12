@@ -474,9 +474,20 @@ const handlePrint = async () => {
       params: { billNo: currentRow.value.billNo },
       responseType: 'blob'
     })
-    const url = window.URL.createObjectURL(res as unknown as Blob)
+
+    // ---- 调试：输出 res 的实际内容 ----
+    console.log('=== printPdf 响应调试 ===')
+    console.log('res 类型:', Object.prototype.toString.call(res))   // 如 [object Blob]
+    console.log('res 是否为 Blob:', res instanceof Blob)
+    console.log('res.size (字节):', (res as Blob).size)
+    console.log('res.type:', (res as Blob).type)
+    console.log('res 本身:', res)
+    // --------------------------------
+
+    const url = window.URL.createObjectURL(res as Blob)
     window.open(url)
-  } catch {
+  } catch (err) {
+    console.error('打印失败:', err)
     ElMessage.error('打印失败')
   }
 }
