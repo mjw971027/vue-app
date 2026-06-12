@@ -11,7 +11,6 @@
 -->
 
 <script setup lang="ts">
-/* eslint-disable no-undef */
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'

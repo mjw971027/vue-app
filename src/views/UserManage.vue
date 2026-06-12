@@ -126,7 +126,6 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable no-undef */
 import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -134,6 +133,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import type { UserManageItem } from '../api/types'
 import { getUserList, registerUser, updateUser, deleteUser, getUserPermissions, setUserPermissions } from '../api/userManage'
 import { PAGE_PERMISSIONS } from '../utils/auth'
+import { formatDate } from '../utils/format'
 
 // ====== 状态 ======
 const loading = ref(false)
@@ -176,17 +176,6 @@ const rules = reactive<FormRules>({
     { required: true, message: '请选择角色', trigger: 'change' }
   ]
 })
-
-// ====== 格式化日期 ======
-const formatDate = (date: string | null) => {
-  if (!date) return '-'
-  const d = new Date(date)
-  if (isNaN(d.getTime())) return date.substring(0, 10)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 // ====== 加载用户列表 ======
 const loadUserList = async () => {

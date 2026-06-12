@@ -7,16 +7,12 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getToken, getUserInfoFromToken } from './utils/auth'
 import { useAuthStore } from './stores/auth'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
-const showTokenModal = ref(false)
-const tokenInfo = ref('')
 const activeIndex = ref('/')
 const isAuthPage = computed(() => ['/login', '/register'].includes(route.path))
 
@@ -30,37 +26,6 @@ watch(() => route.path, (newPath) => {
 /** 退出登录 */
 const handleLogout = async () => {
   await auth.logout()
-}
-
-/** 显示 Token 信息 */
-const showTokenInfo = () => {
-  const token = getToken()
-  if (!token) {
-    tokenInfo.value = '未找到 Token'
-  } else {
-    const userInfo = getUserInfoFromToken()
-    tokenInfo.value = `Token: ${token}\n\n解析后的用户信息:\n${userInfo ? JSON.stringify(userInfo, null, 2) : '解析失败'}`
-  }
-  showTokenModal.value = true
-}
-
-/** 关闭 Token 弹窗 */
-const closeTokenModal = () => {
-  showTokenModal.value = false
-  tokenInfo.value = ''
-}
-
-/** 复制 Token */
-const copyToken = async () => {
-  const token = getToken()
-  if (token) {
-    try {
-      await window.navigator.clipboard.writeText(token)
-      ElMessage.success('Token 已复制到剪贴板')
-    } catch {
-      ElMessage.error('复制失败')
-    }
-  }
 }
 
 /** 菜单跳转 */
@@ -126,10 +91,6 @@ const handleMenuSelect = (index: string) => {
               </el-tag>
             </div>
             <el-divider class="footer-divider" />
-            <el-button type="primary" link class="sidebar-btn" @click="showTokenInfo">
-              <el-icon><Key /></el-icon>
-              <span>Token</span>
-            </el-button>
             <el-button type="danger" link class="sidebar-btn" @click="handleLogout">
               <el-icon><SwitchButton /></el-icon>
               <span>退出</span>
@@ -151,15 +112,6 @@ const handleMenuSelect = (index: string) => {
     </template>
 
     <router-view v-else />
-
-    <!-- Token 信息弹窗 -->
-    <el-dialog v-model="showTokenModal" title="当前 Token 信息" width="600px">
-      <el-input type="textarea" :model-value="tokenInfo" :rows="10" readonly />
-      <template #footer>
-        <el-button @click="copyToken">复制 Token</el-button>
-        <el-button type="primary" @click="closeTokenModal">关闭</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 

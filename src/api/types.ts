@@ -69,6 +69,135 @@ export interface SystemInfo {
   lastUpdate: string    // 最后更新日期（如 "2026-06-02"）
 }
 
+// ==================== 工装申请管理 ====================
+
+/** 公司主体下拉选项 */
+export interface CompanyOption {
+  code: string
+  descChn: string
+}
+
+/** 部门下拉选项 */
+export interface DepartmentOption {
+  orgnCd: string
+  orgnDesc: string
+}
+
+/** 工程号下拉选项 */
+export interface ProjectOption {
+  code: string
+}
+
+/** 工装申请列表项（表格行数据） */
+export interface ComponentItem {
+  billNo: string
+  componentsName: string
+  projNo: string
+  deptName: string
+  appUser: string
+  divDesc: string
+  finalNumberNo: string
+  maStatus: string
+  maStatusDesc: string
+  maProcessId: string
+  createDate: string
+  guid: string
+  empNo: string
+}
+
+/** 工装申请搜索参数 */
+export interface ComponentSearchParams {
+  companyNo: string
+  dateFrom: string
+  dateTo: string
+  deptNo: string
+  projNo: string
+  maStatus: string
+  componentsName: string
+  page: number
+  size: number
+}
+
+/** 分页结果 */
+export interface PaginatedResult<T> {
+  list: T[]
+  total: number
+}
+
+/** 工装申请基本信息 */
+export interface ComponentBillInfo {
+  billNo?: string
+  companyEnDesc?: string
+  deptDesc?: string
+  appUser?: string
+  appDate?: string
+  projNo?: string
+  divCd?: string
+  numberNo?: string
+  tel?: string
+  needDate?: string
+  dwgno?: string
+  materialTotalCost?: number
+  finalNumberNo?: string
+  mhBdgt?: string
+  componentsName?: string
+  remark?: string
+}
+
+/** 工装申请材料 */
+export interface ComponentMaterial {
+  guid?: string
+  componentsId?: string
+  createNode?: string
+  activation: string
+  materialNo?: string
+  materialName?: string
+  unit?: string
+  unitDesc?: string
+  demandQty?: string | number
+  finalDemandQty?: string | number
+  materialCost?: string | number
+  materialSources?: string
+  materialSourcesDesc?: string
+  remark?: string
+  quality?: string
+  thk1?: string
+  thk2?: string
+  w1?: string
+  w2?: string
+  l?: string
+}
+
+/** 附件文件 */
+export interface ComponentFile {
+  fileId?: string
+  fileName: string
+  fileType?: string
+  createDate?: string
+  createUserId?: string
+}
+
+/** 审批记录 */
+export interface ComponentAudit {
+  createUserId: string
+  opinion: string
+  stepName: string
+  menuName: string
+  createDate: string
+}
+
+/** 单位下拉选项 */
+export interface UnitOption {
+  guid: string
+  unt_DESC: string
+}
+
+/** 物资来源下拉选项 */
+export interface MaterialSourceOption {
+  id: string
+  text: string
+}
+
 // ==================== 通用响应封装 ====================
 
 /**

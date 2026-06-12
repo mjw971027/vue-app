@@ -199,12 +199,27 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable no-undef */
 import { ref, reactive, onMounted } from 'vue'
 import { Search, Plus, Delete, RefreshLeft, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type {
+  CompanyOption,
+  DepartmentOption,
+  ProjectOption,
+  ComponentItem,
+  ComponentSearchParams,
+} from '../api/types'
+import {
+  getCompanies,
+  getDepartments,
+  getProjects,
+  searchComponents,
+  createComponent,
+  deleteComponent,
+  retractComponent,
+} from '../api/components'
+import { formatDate } from '../utils/format'
 import request from '../api/request'
-import { getToken } from '../utils/auth'
 import ComponentsCreate from './ComponentsCreate.vue'
 
 // 搜索表单
@@ -213,8 +228,8 @@ const searchForm = reactive({
   deptNo: '',
   projNo: '',
   maStatus: '',
-  dateFrom: null as unknown as Date | null,
-  dateTo: null as unknown as Date | null,
+  dateFrom: null as Date | null,
+  dateTo: null as Date | null,
   componentsName: ''
 })
 
@@ -226,14 +241,14 @@ const currentGuid = ref('')
 const isReadOnly = ref(false)
 
 // 表格数据
-const tableData = ref<Record<string, unknown>[]>([])
+const tableData = ref<ComponentItem[]>([])
 const tableLoading = ref(false)
-const currentRow = ref<Record<string, unknown> | null>(null)
+const currentRow = ref<ComponentItem | null>(null)
 
 // 下拉选项
-const companyOptions = ref<Record<string, unknown>[]>([])
-const departmentOptions = ref<Record<string, unknown>[]>([])
-const projectOptions = ref<Record<string, unknown>[]>([])
+const companyOptions = ref<CompanyOption[]>([])
+const departmentOptions = ref<DepartmentOption[]>([])
+const projectOptions = ref<ProjectOption[]>([])
 
 // 分页
 const pagination = reactive({
@@ -247,24 +262,13 @@ const createForm = reactive({
   programName: ''
 })
 
-/** 格式化日期：转为 Date 后输出 YYYY-MM-DD */
-const formatDate = (date: string | null) => {
-  if (!date) return ''
-  const d = new Date(date)
-  if (isNaN(d.getTime())) return date.substring(0, 10)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 /** 获取公司列表 */
 const loadCompanies = async () => {
   try {
-    const res = await request.get('/components/getComps')
+    const res = await getCompanies()
     companyOptions.value = res.data || []
     if (companyOptions.value.length > 0) {
-      searchForm.companyNo = companyOptions.value[0].code as string
+      searchForm.companyNo = companyOptions.value[0].code
       await loadDepartments()
       await loadProjects()
     }
@@ -277,9 +281,7 @@ const loadCompanies = async () => {
 const loadDepartments = async () => {
   if (!searchForm.companyNo) return
   try {
-    const res = await request.get('/components/getDeptCombobox', {
-      params: { superOrgnCd: searchForm.companyNo }
-    })
+    const res = await getDepartments(searchForm.companyNo)
     departmentOptions.value = res.data || []
   } catch {
     ElMessage.error('加载部门列表失败')
@@ -289,7 +291,7 @@ const loadDepartments = async () => {
 /** 获取工程号列表 */
 const loadProjects = async () => {
   try {
-    const res = await request.get('/components/qryAllProjNo')
+    const res = await getProjects()
     projectOptions.value = res.data || []
   } catch {
     ElMessage.error('加载工程号列表失败')
@@ -315,6 +317,16 @@ const getStatusType = (status: string): string => {
   return map[status] || 'info'
 }
 
+/** 格式化日期为 API 格式（YYYYMMDD） */
+const formatDateForApi = (date: Date | string | null): string => {
+  if (!date) return ''
+  const d = typeof date === 'string' ? new Date(date) : date
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}${month}${day}`
+}
+
 /** 查询数据 */
 const handleSearch = async () => {
   if (!searchForm.companyNo) {
@@ -324,7 +336,7 @@ const handleSearch = async () => {
 
   tableLoading.value = true
   try {
-    const param = {
+    const param: ComponentSearchParams = {
       companyNo: searchForm.companyNo,
       dateFrom: searchForm.dateFrom ? formatDateForApi(searchForm.dateFrom) : '',
       dateTo: searchForm.dateTo ? formatDateForApi(searchForm.dateTo) : '',
@@ -335,7 +347,7 @@ const handleSearch = async () => {
       page: pagination.currentPage,
       size: pagination.pageSize
     }
-    const res = await request.get('/components/getTComponentsData', { params: param })
+    const res = await searchComponents(param)
     tableData.value = res.data?.list || []
     pagination.total = res.data?.total || 0
   } catch {
@@ -343,16 +355,6 @@ const handleSearch = async () => {
   } finally {
     tableLoading.value = false
   }
-}
-
-/** 格式化日期为 API 格式 */
-const formatDateForApi = (date: Date | string | null) => {
-  if (!date) return ''
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}${month}${day}`
 }
 
 /** 新增 */
@@ -374,15 +376,14 @@ const handleCreate = async () => {
   }
 
   try {
-    const res = await request.post('/components/createBase', {
+    const res = await createComponent({
       programName: createForm.programName,
       companyNo: searchForm.companyNo
     })
     if (res.data?.guid) {
       createDialogVisible.value = false
       ElMessage.success('创建成功')
-      // 打开详情窗口（这里可以跳转到详情页）
-      handleShowDetail(res.data)
+      handleShowDetail(res.data as unknown as ComponentItem)
     }
   } catch {
     ElMessage.error('创建失败')
@@ -416,9 +417,7 @@ const handleDelete = async () => {
     await ElMessageBox.confirm('确定要删除该记录吗？', '提示', {
       type: 'warning'
     })
-    const res = await request.post('/components/delApp', {
-      guid: currentRow.value.guid
-    })
+    const res = await deleteComponent(currentRow.value.guid)
     if (res.data?.flag === 1) {
       ElMessage.success('删除成功')
       handleSearch()
@@ -442,7 +441,7 @@ const handleRetract = async () => {
     return
   }
 
-  if (['01', '00', '03'].includes(currentRow.value.maStatus as string)) {
+  if (['01', '00', '03'].includes(currentRow.value.maStatus)) {
     ElMessage.warning('必须是在流程中才可以退回')
     return
   }
@@ -451,9 +450,7 @@ const handleRetract = async () => {
     await ElMessageBox.confirm('确定要撤回该记录吗？', '提示', {
       type: 'warning'
     })
-    const res = await request.post('/components/retractApp', {
-      guid: currentRow.value.guid
-    })
+    const res = await retractComponent(currentRow.value.guid)
     if (res.data?.flag === 1) {
       ElMessage.success('退回成功')
       handleSearch()
@@ -465,24 +462,31 @@ const handleRetract = async () => {
   }
 }
 
-/** 打印（带上 token） */
-const handlePrint = () => {
+/** 打印（通过 axios 获取 PDF Blob，避免 Token 暴露在 URL 中） */
+const handlePrint = async () => {
   if (!currentRow.value) {
     ElMessage.warning('请选择一条数据进行打印')
     return
   }
 
-  const token = getToken()
-  window.open(`/api/components/printPdf?billNo=${currentRow.value.billNo}&token=${encodeURIComponent(token || '')}`)
+  try {
+    const res = await request.get('/components/printPdf', {
+      params: { billNo: currentRow.value.billNo },
+      responseType: 'blob'
+    })
+    const url = window.URL.createObjectURL(res as unknown as Blob)
+    window.open(url)
+  } catch {
+    ElMessage.error('打印失败')
+  }
 }
 
 /** 查看详情 */
-const handleShowDetail = (row: Record<string, unknown>) => {
-  currentBillNo.value = row.billNo as string || ''
-  currentGuid.value = row.guid as string || ''
+const handleShowDetail = (row: ComponentItem) => {
+  currentBillNo.value = row.billNo || ''
+  currentGuid.value = row.guid || ''
   // maStatus 为 01(编制) 或 00(退回) 时可编辑，否则只读
-  // 新建的工装没有 maStatus，默认为 01(编制) 可编辑
-  const status = (row.maStatus as string) || '01'
+  const status = row.maStatus || '01'
   isReadOnly.value = !(status === '01' || status === '00')
   createDialogVisible2.value = true
 }
@@ -502,7 +506,7 @@ const handleCreateDialogClose = (refresh: boolean) => {
 }
 
 /** 表格行选择变化 */
-const handleRowChange = (row: Record<string, unknown>) => {
+const handleRowChange = (row: ComponentItem | null) => {
   currentRow.value = row
 }
 

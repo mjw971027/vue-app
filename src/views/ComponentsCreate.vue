@@ -427,12 +427,33 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable no-undef */
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Delete, Upload, Document, List, FolderOpened, Checked } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type {
+  ProjectOption,
+  UnitOption,
+  MaterialSourceOption,
+  ComponentMaterial,
+  ComponentFile,
+  ComponentAudit,
+} from '../api/types'
+import {
+  getProjectManagerProjects,
+  getUnits as getUnitsApi,
+  getMaterialSources as getMaterialSourcesApi,
+  getBillInfo,
+  getComponentsApp,
+  getComponentsAppFile,
+  getComponentsAppAudit,
+  deleteAppInfo,
+  deleteComFile,
+  saveBase,
+  saveAppInfo,
+  saveBaseCommit,
+} from '../api/components'
 import request from '../api/request'
-import { getAuthHeader, getToken } from '../utils/auth'
+import { getAuthHeader } from '../utils/auth'
 
 // Props
 const props = defineProps<{
@@ -451,7 +472,7 @@ const visible = ref(true)
 const title = ref('工装申请')
 const isReadOnly = computed(() => props.isReadOnly || false)
 const uploadDialogVisible = ref(false)
-const uploadRef = ref()
+const uploadRef = ref<{ submit: () => void }>()
 
 // 表单数据
 const formData = reactive({
@@ -474,18 +495,18 @@ const formData = reactive({
 })
 
 // 表格数据
-const materialData = ref<Record<string, unknown>[]>([])
-const fileData = ref<Record<string, unknown>[]>([])
-const auditData = ref<Record<string, unknown>[]>([])
+const materialData = ref<ComponentMaterial[]>([])
+const fileData = ref<ComponentFile[]>([])
+const auditData = ref<ComponentAudit[]>([])
 
 // 选中的行
-const selectedMaterials = ref<Record<string, unknown>[]>([])
-const selectedFiles = ref<Record<string, unknown>[]>([])
+const selectedMaterials = ref<ComponentMaterial[]>([])
+const selectedFiles = ref<ComponentFile[]>([])
 
 // 下拉选项
-const projectOptions = ref<Record<string, unknown>[]>([])
-const unitOptions = ref<Record<string, unknown>[]>([])
-const materialSourceOptions = ref<{ id: string; text: string }[]>([])
+const projectOptions = ref<ProjectOption[]>([])
+const unitOptions = ref<UnitOption[]>([])
+const materialSourceOptions = ref<MaterialSourceOption[]>([])
 
 // 上传相关
 const uploadUrl = ref('')
@@ -514,7 +535,7 @@ onMounted(() => {
 /** 加载工程号列表 */
 const loadProjects = async () => {
   try {
-    const res = await request.get('/projectManager/qryAllProjNo')
+    const res = await getProjectManagerProjects()
     projectOptions.value = res.data || []
   } catch {
     ElMessage.error('加载工程号列表失败')
@@ -524,7 +545,7 @@ const loadProjects = async () => {
 /** 加载单位列表 */
 const loadUnits = async () => {
   try {
-    const res = await request.get('/components/getUnit')
+    const res = await getUnitsApi()
     unitOptions.value = res.data || []
   } catch {
     ElMessage.error('加载单位列表失败')
@@ -534,7 +555,7 @@ const loadUnits = async () => {
 /** 加载物资来源 */
 const loadMaterialSources = async () => {
   try {
-    const res = await request.get('/components/selectMatS')
+    const res = await getMaterialSourcesApi()
     materialSourceOptions.value = res.data || []
   } catch {
     ElMessage.error('加载物资来源失败')
@@ -545,47 +566,43 @@ const loadMaterialSources = async () => {
 const loadData = async () => {
   try {
     // 加载基本信息
-    const res = await request.get('/components/getBillInfo', {
-      params: { billId: props.guid }
-    })
-    if (res.data) {
-      Object.assign(formData, {
-        billNo: res.data.billNo || '',
-        company: res.data.companyEnDesc || '',
-        deptDesc: res.data.deptDesc || '',
-        appUser: res.data.appUser || '',
-        appDate: res.data.appDate || '',
-        projNo: res.data.projNo || '',
-        divCd: res.data.divCd || '',
-        numberNo: res.data.numberNo || '',
-        tel: res.data.tel || '',
-        needDate: res.data.needDate || '',
-        dwgno: res.data.dwgno || '',
-        materialTotalCost: res.data.materialTotalCost || 0,
-        finalNumberNo: res.data.finalNumberNo || '',
-        mhBdgt: res.data.mhBdgt || '',
-        componentsName: res.data.componentsName || '',
-        remark: res.data.remark || ''
-      })
+    if (props.guid) {
+      const res = await getBillInfo(props.guid)
+      if (res.data) {
+        Object.assign(formData, {
+          billNo: res.data.billNo || '',
+          company: res.data.companyEnDesc || '',
+          deptDesc: res.data.deptDesc || '',
+          appUser: res.data.appUser || '',
+          appDate: res.data.appDate || '',
+          projNo: res.data.projNo || '',
+          divCd: res.data.divCd || '',
+          numberNo: res.data.numberNo || '',
+          tel: res.data.tel || '',
+          needDate: res.data.needDate || '',
+          dwgno: res.data.dwgno || '',
+          materialTotalCost: res.data.materialTotalCost || 0,
+          finalNumberNo: res.data.finalNumberNo || '',
+          mhBdgt: res.data.mhBdgt || '',
+          componentsName: res.data.componentsName || '',
+          remark: res.data.remark || ''
+        })
+      }
     }
 
-    // 加载申请材料
-    const res2 = await request.get('/components/getComponentsApp', {
-      params: { billNo: props.billNo }
-    })
-    materialData.value = res2.data || []
+    if (props.billNo) {
+      // 加载申请材料
+      const res2 = await getComponentsApp(props.billNo)
+      materialData.value = res2.data || []
 
-    // 加载附件
-    const res3 = await request.get('/components/getComponentsAppFile', {
-      params: { billNo: props.billNo }
-    })
-    fileData.value = res3.data || []
+      // 加载附件
+      const res3 = await getComponentsAppFile(props.billNo)
+      fileData.value = res3.data || []
 
-    // 加载审批记录
-    const res4 = await request.get('/components/getComponentsAppAudit', {
-      params: { billNo: props.billNo }
-    })
-    auditData.value = res4.data || []
+      // 加载审批记录
+      const res4 = await getComponentsAppAudit(props.billNo)
+      auditData.value = res4.data || []
+    }
   } catch {
     ElMessage.error('加载数据失败')
   }
@@ -613,7 +630,7 @@ const handleDeleteMaterial = async () => {
     })
 
     const ids = selectedMaterials.value.map(item => item.guid)
-    await request.post('/components/delAppInfo', { data: JSON.stringify(ids) })
+    await deleteAppInfo(ids)
     ElMessage.success('删除成功')
     loadData()
   } catch (error: unknown) {
@@ -624,12 +641,12 @@ const handleDeleteMaterial = async () => {
 }
 
 /** 材料选择变化 */
-const handleMaterialSelectionChange = (selection: Record<string, unknown>[]) => {
+const handleMaterialSelectionChange = (selection: ComponentMaterial[]) => {
   selectedMaterials.value = selection
 }
 
 /** 需求数变化 */
-const handleDemandQtyChange = (row: Record<string, unknown>) => {
+const handleDemandQtyChange = (row: ComponentMaterial) => {
   row.finalDemandQty = row.demandQty
   calculateTotalCost()
 }
@@ -656,8 +673,8 @@ const submitUpload = () => {
 }
 
 /** 上传前校验 */
-const beforeUpload = (file: File) => {
-  if (file.size > 10 * 1024 * 1024) {
+const beforeUpload = (_file: File) => {
+  if (_file.size > 10 * 1024 * 1024) {
     ElMessage.error('文件大小不能超过 10MB')
     return false
   }
@@ -665,7 +682,7 @@ const beforeUpload = (file: File) => {
 }
 
 /** 上传成功 */
-const handleUploadSuccess = (response: any) => {
+const handleUploadSuccess = (_response: unknown) => {
   ElMessage.success('上传成功')
   uploadDialogVisible.value = false
   loadData()
@@ -689,7 +706,7 @@ const handleDeleteFile = async () => {
     })
 
     const ids = selectedFiles.value.map(item => item.fileId)
-    await request.post('/components/delComFile', { data: JSON.stringify(ids) })
+    await deleteComFile(ids)
     ElMessage.success('删除成功')
     loadData()
   } catch (error: unknown) {
@@ -700,21 +717,35 @@ const handleDeleteFile = async () => {
 }
 
 /** 文件选择变化 */
-const handleFileSelectionChange = (selection: Record<string, unknown>[]) => {
+const handleFileSelectionChange = (selection: ComponentFile[]) => {
   selectedFiles.value = selection
 }
 
-/** 下载文件 */
-const handleDownloadFile = (row: Record<string, unknown>) => {
-  const token = getToken()
-  window.open(`/api/components/fileDownload?fileId=${row.fileId}&token=${token}`)
+/** 下载文件（通过 axios 获取 Blob，避免 Token 暴露在 URL 中） */
+const handleDownloadFile = async (row: ComponentFile) => {
+  try {
+    const res = await request.get('/components/fileDownload', {
+      params: { fileId: row.fileId },
+      responseType: 'blob'
+    })
+    const blob = res as unknown as Blob
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = row.fileName || 'download'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  } catch {
+    ElMessage.error('下载失败')
+  }
 }
 
 /** 保存 */
 const handleSave = async () => {
   try {
-    // 保存基本信息
-    const param = {
+    const param: Record<string, unknown> = {
       guid: props.guid,
       billNo: formData.billNo,
       projNo: formData.projNo,
@@ -730,16 +761,11 @@ const handleSave = async () => {
       remark: formData.remark
     }
 
-    const res = await request.post('/components/saveBase', {
-      data: JSON.stringify(param)
-    })
+    const res = await saveBase(param)
 
     if (res.data?.flag === 1) {
-      // 保存申请材料
       if (materialData.value.length > 0) {
-        const res2 = await request.post('/components/saveAppInfo', {
-          data: JSON.stringify(materialData.value)
-        })
+        const res2 = await saveAppInfo(materialData.value)
         if (res2.data?.flag === 1) {
           ElMessage.success('保存成功')
         }
@@ -765,7 +791,7 @@ const handleCommit = async () => {
       type: 'warning'
     })
 
-    const param = {
+    const param: Record<string, unknown> = {
       guid: props.guid,
       billNo: formData.billNo,
       projNo: formData.projNo,
@@ -777,10 +803,7 @@ const handleCommit = async () => {
       remark: formData.remark
     }
 
-    const res = await request.post('/components/saveBaseCommit', {
-      data: JSON.stringify(param),
-      data2: JSON.stringify(materialData.value)
-    })
+    const res = await saveBaseCommit(param, materialData.value)
 
     if (res.data?.flag === 1) {
       ElMessage.success('提交成功')
