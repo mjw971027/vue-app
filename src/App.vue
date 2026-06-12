@@ -1,90 +1,35 @@
 <!--
   ============================================================
   文件：src/App.vue
-  作用：Vue 应用的根组件（Root Component）
-  说明：
-    - 是整个应用的最顶层组件，所有页面都在这个组件内渲染
-    - 使用 Element Plus 的 el-menu 组件作为顶部导航栏
-    - 包含 Token 显示弹窗（使用 el-dialog）
+  作用：Vue 应用的根组件（侧边栏布局 + 认证状态管理）
   ============================================================
 -->
-
 <script setup lang="ts">
-/* eslint-disable no-undef */
-/**
- * 顶部导航栏逻辑
- * - 检查登录状态，显示/隐藏退出按钮
- * - 退出登录功能
- * - 显示当前 Token
- */
 import { useRouter, useRoute } from 'vue-router'
-import { isAuthenticated, getToken, getUserInfoFromToken, isAdmin, getStoredPermissions, removeToken, refreshPermissions, clearPermissions } from './utils/auth'
-import { logout } from './api/auth'
-import { ref, watch, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getToken, getUserInfoFromToken } from './utils/auth'
+import { useAuthStore } from './stores/auth'
 
 const router = useRouter()
 const route = useRoute()
-const isLoggedIn = ref(false)
-const showTokenModal = ref(false)  // 控制 Token 弹窗显示
-const tokenInfo = ref('')          // Token 信息
-const activeIndex = ref('/')       // 当前激活的菜单项
-const isAdminUser = ref(false)     // 是否为管理员
-const pagePerms = ref<string[]>([]) // 当前用户页面权限
+const auth = useAuthStore()
+
+const showTokenModal = ref(false)
+const tokenInfo = ref('')
+const activeIndex = ref('/')
 const isAuthPage = computed(() => ['/login', '/register'].includes(route.path))
-const currentUsername = ref('')     // 当前登录用户名
 
-/** 检查当前用户是否有权访问页面（响应式） */
-const hasPerm = (key: string) => {
-  if (isAdminUser.value) return true
-  return pagePerms.value.includes(key)
-}
-
-/** 从 JWT 获取当前用户名 */
-const getUsername = () => {
-  const info = getUserInfoFromToken()
-  return info?.sub || info?.username || ''
-}
-
-/** 检查登录状态并刷新权限 */
-const checkAuth = () => {
-  isLoggedIn.value = isAuthenticated()
-  isAdminUser.value = isAdmin()
-  currentUsername.value = isLoggedIn.value ? getUsername() : ''
-  pagePerms.value = isLoggedIn.value ? getStoredPermissions() : []
-  if (isLoggedIn.value) {
-    refreshPermissions().then(() => { pagePerms.value = getStoredPermissions() })
-  }
-}
-
-// 初始检查
-checkAuth()
-
-// 监听路由变化，每次路由切换时重新检查登录状态
+// 组件挂载时 + 路由变化时刷新认证状态
+auth.refreshAuth()
 watch(() => route.path, (newPath) => {
-  checkAuth()
+  auth.refreshAuth()
   activeIndex.value = newPath
 })
 
 /** 退出登录 */
 const handleLogout = async () => {
-  // 1. 先调用后端退出接口（响应也返回 token，但我们已退出不需要处理）
-  try {
-    await logout()
-  } catch {
-    // API 调用失败继续执行
-  }
-
-  // 2. 清除本地状态
-  removeToken()
-  clearPermissions()
-  isLoggedIn.value = false
-  isAdminUser.value = false
-  currentUsername.value = ''
-  pagePerms.value = []
-
-  // 3. 跳转到登录页
-  window.location.href = '/login'
+  await auth.logout()
 }
 
 /** 显示 Token 信息 */
@@ -105,25 +50,23 @@ const closeTokenModal = () => {
   tokenInfo.value = ''
 }
 
-/** 复制 Token 到剪贴板 */
+/** 复制 Token */
 const copyToken = async () => {
   const token = getToken()
   if (token) {
     try {
       await window.navigator.clipboard.writeText(token)
       ElMessage.success('Token 已复制到剪贴板')
-    } catch (err: unknown) {
-      window.console.error('复制失败:', err)
+    } catch {
       ElMessage.error('复制失败')
     }
   }
 }
 
-/** 处理菜单跳转 */
+/** 菜单跳转 */
 const handleMenuSelect = (index: string) => {
   router.push(index)
 }
-/* eslint-enable no-undef */
 </script>
 
 <template>
@@ -138,7 +81,6 @@ const handleMenuSelect = (index: string) => {
           class="sidebar-menu"
           @select="handleMenuSelect"
         >
-          <!-- 品牌 Logo -->
           <el-menu-item index="/" class="logo-item">
             <el-icon><HomeFilled /></el-icon>
             <span>MyVueApp</span>
@@ -146,36 +88,42 @@ const handleMenuSelect = (index: string) => {
 
           <el-divider class="menu-divider" />
 
-          <!-- 导航链接（根据权限显示） -->
-          <el-menu-item v-if="hasPerm('page1')" index="/page1">
+          <el-menu-item v-if="auth.hasPerm('page1')" index="/page1">
             <el-icon><Document /></el-icon>
             <span>页面一</span>
           </el-menu-item>
-          <el-menu-item v-if="hasPerm('page2')" index="/page2">
+          <el-menu-item v-if="auth.hasPerm('page2')" index="/page2">
             <el-icon><DataAnalysis /></el-icon>
             <span>页面二</span>
           </el-menu-item>
-          <el-menu-item v-if="hasPerm('page3')" index="/page3">
+          <el-menu-item v-if="auth.hasPerm('page3')" index="/page3">
             <el-icon><Setting /></el-icon>
             <span>页面三</span>
           </el-menu-item>
-          <el-menu-item v-if="hasPerm('page4')" index="/page4">
+          <el-menu-item v-if="auth.hasPerm('page4')" index="/page4">
             <el-icon><Files /></el-icon>
             <span>工装申请</span>
           </el-menu-item>
-          <el-menu-item v-if="isAdminUser" index="/users">
+          <el-menu-item v-if="auth.isAdminUser" index="/users">
             <el-icon><User /></el-icon>
             <span>用户管理</span>
           </el-menu-item>
         </el-menu>
 
-        <!-- 侧边栏底部按钮组 -->
         <div class="sidebar-footer">
-          <template v-if="isLoggedIn">
+          <template v-if="auth.isLoggedIn">
             <div class="user-info">
               <el-icon><User /></el-icon>
-              <span class="user-name">{{ currentUsername }}</span>
-              <el-tag v-if="isAdminUser" size="small" type="warning" effect="dark" round>ADMIN</el-tag>
+              <span class="user-name">{{ auth.currentUsername }}</span>
+              <el-tag
+                v-if="auth.isAdminUser"
+                size="small"
+                type="warning"
+                effect="dark"
+                round
+              >
+                ADMIN
+              </el-tag>
             </div>
             <el-divider class="footer-divider" />
             <el-button type="primary" link class="sidebar-btn" @click="showTokenInfo">
@@ -196,28 +144,17 @@ const handleMenuSelect = (index: string) => {
         </div>
       </aside>
 
-      <!-- 主内容区 -->
       <main class="main-content">
         <router-view />
       </main>
       </div>
     </template>
 
-    <!-- 登录页面：全屏无侧边栏 -->
     <router-view v-else />
 
     <!-- Token 信息弹窗 -->
-    <el-dialog
-      v-model="showTokenModal"
-      title="当前 Token 信息"
-      width="600px"
-    >
-      <el-input
-        type="textarea"
-        :model-value="tokenInfo"
-        :rows="10"
-        readonly
-      />
+    <el-dialog v-model="showTokenModal" title="当前 Token 信息" width="600px">
+      <el-input type="textarea" :model-value="tokenInfo" :rows="10" readonly />
       <template #footer>
         <el-button @click="copyToken">复制 Token</el-button>
         <el-button type="primary" @click="closeTokenModal">关闭</el-button>
@@ -226,7 +163,7 @@ const handleMenuSelect = (index: string) => {
   </div>
 </template>
 
-<style>
+<style lang="scss">
 /* ===== 全局样式重置 ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -239,8 +176,10 @@ body {
 #app { min-height: 100vh; }
 
 /* ===== 侧边栏 ===== */
+$sidebar-width: 220px;
+
 .app-sidebar {
-  width: 220px;
+  width: $sidebar-width;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -258,10 +197,8 @@ body {
   color: #6366f1 !important;
   height: 56px !important;
   line-height: 56px !important;
-}
 
-.logo-item .el-icon {
-  font-size: 20px;
+  .el-icon { font-size: 20px; }
 }
 
 .menu-divider {
@@ -273,23 +210,21 @@ body {
   flex: 1;
   border-right: none !important;
   padding-top: 0;
-}
 
-.sidebar-menu .el-menu-item {
-  height: 44px;
-  line-height: 44px;
-  margin: 2px 8px;
-  border-radius: 8px;
-  font-size: 14px;
-}
+  .el-menu-item {
+    height: 44px;
+    line-height: 44px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    font-size: 14px;
 
-.sidebar-menu .el-menu-item.is-active {
-  background: #eeefff !important;
-  color: #6366f1 !important;
-}
+    &.is-active {
+      background: #eeefff !important;
+      color: #6366f1 !important;
+    }
 
-.sidebar-menu .el-menu-item:hover {
-  background: #f5f6ff !important;
+    &:hover { background: #f5f6ff !important; }
+  }
 }
 
 /* ===== 侧边栏底部 ===== */
@@ -308,11 +243,8 @@ body {
   padding: 8px 12px;
   font-size: 14px;
   color: #303133;
-}
 
-.user-info .el-icon {
-  font-size: 16px;
-  color: #909399;
+  .el-icon { font-size: 16px; color: #909399; }
 }
 
 .user-name {
@@ -336,10 +268,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-}
 
-.sidebar-footer .sidebar-btn:hover {
-  background: #f5f6ff;
+  &:hover { background: #f5f6ff; }
 }
 
 .sidebar-footer .el-menu-item {
@@ -351,7 +281,7 @@ body {
 
 /* ===== 主内容区 ===== */
 .main-content {
-  margin-left: 220px;
+  margin-left: $sidebar-width;
   flex: 1;
   min-height: 100vh;
   display: flex;

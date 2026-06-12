@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "一键启动 Vue 开发服务器",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "if (-not (Test-Path node_modules)) { Write-Host '-- 检测到 node_modules 不存在，正在安装依赖...' -ForegroundColor Yellow; npm install; if ($LASTEXITCODE -ne 0) { Write-Host '-- 依赖安装失败！' -ForegroundColor Red; Read-Host '按 Enter 退出'; exit 1 }; Write-Host '-- 依赖安装完成' -ForegroundColor Green }; Write-Host '-- 正在启动开发服务器...' -ForegroundColor Cyan; npm run dev"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "detail": "自动检测依赖 -> npm install -> npm run dev (http://localhost:5173)",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    }
+  ]
+}
