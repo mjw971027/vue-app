@@ -16,7 +16,8 @@
     :fullscreen="false"
     :close-on-click-modal="false"
     @close="handleClose"
-  >
+  >   
+  
     <!-- 基本信息 -->
     <div class="form-section">
       <div class="form-section-header">
