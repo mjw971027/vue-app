@@ -94,7 +94,7 @@ export interface ComponentItem {
   componentsName: string
   projNo: string
   deptName: string
-  appUser: string
+  createUserName: string
   divDesc: string
   finalNumberNo: string
   maStatus: string
@@ -129,7 +129,7 @@ export interface ComponentBillInfo {
   billNo?: string
   companyEnDesc?: string
   deptDesc?: string
-  appUser?: string
+  createUserName?: string
   appDate?: string
   projNo?: string
   divCd?: string

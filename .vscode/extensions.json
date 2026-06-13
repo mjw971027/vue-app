@@ -19,6 +19,7 @@
     // Git 增强
     "eamodio.gitlens",
     // 括号高亮
-    "coenraads.bracket-pair-colorizer-2"
+    "coenraads.bracket-pair-colorizer-2",
+    "tencent-cloud.coding-copilot"
   ]
 }

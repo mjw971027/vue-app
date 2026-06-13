@@ -123,7 +123,7 @@
         <el-table-column prop="componentsName" label="项目名称" min-width="180" show-overflow-tooltip />
         <el-table-column prop="projNo" label="工程号" width="100" align="center" />
         <el-table-column prop="deptName" label="申请部门" width="100" align="center" />
-        <el-table-column prop="appUser" label="申请人" width="100" align="center" />
+        <el-table-column prop="createUserName" label="申请人" width="100" align="center" />
         <el-table-column prop="divDesc" label="工装类别" width="100" align="center" />
         <el-table-column prop="finalNumberNo" label="最终审核数" width="100" align="center" />
         <el-table-column label="申请状态" width="110" align="center">
@@ -403,7 +403,7 @@ const handleDelete = async () => {
     return
   }
 
-  if (currentRow.value.appUser !== currentRow.value.empNo) {
+  if (currentRow.value.createUserName !== currentRow.value.empNo) {
     ElMessage.warning('不可删除他人项目')
     return
   }
@@ -436,7 +436,7 @@ const handleRetract = async () => {
     return
   }
 
-  if (currentRow.value.appUser !== currentRow.value.empNo) {
+  if (currentRow.value.createUserName !== currentRow.value.empNo) {
     ElMessage.warning('不可撤回他人项目')
     return
   }

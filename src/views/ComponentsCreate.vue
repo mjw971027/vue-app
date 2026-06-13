@@ -48,7 +48,7 @@
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="申请人">
-              <el-input v-model="formData.appUser" disabled />
+              <el-input v-model="formData.createUserName" disabled />
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -479,7 +479,7 @@ const formData = reactive({
   billNo: '',
   company: '',
   deptDesc: '',
-  appUser: '',
+  createUserName: '',
   appDate: '',
   projNo: '',
   divCd: '',
@@ -573,7 +573,7 @@ const loadData = async () => {
           billNo: res.data.billNo || '',
           company: res.data.companyEnDesc || '',
           deptDesc: res.data.deptDesc || '',
-          appUser: res.data.appUser || '',
+          createUserName: res.data.createUserName || '',
           appDate: res.data.appDate || '',
           projNo: res.data.projNo || '',
           divCd: res.data.divCd || '',
