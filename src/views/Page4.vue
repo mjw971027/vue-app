@@ -475,19 +475,13 @@ const handlePrint = async () => {
       responseType: 'blob'
     })
 
-    // ---- 调试：输出 res 的实际内容 ----
-    console.log('=== printPdf 响应调试 ===')
-    console.log('res 类型:', Object.prototype.toString.call(res))   // 如 [object Blob]
-    console.log('res 是否为 Blob:', res instanceof Blob)
-    console.log('res.size (字节):', (res as Blob).size)
-    console.log('res.type:', (res as Blob).type)
-    console.log('res 本身:', res)
-    // --------------------------------
-
-    const url = window.URL.createObjectURL(res as Blob)
+    // eslint-disable-next-line no-undef
+    const blob = res.data as Blob
+    // eslint-disable-next-line no-undef
+    const url = URL.createObjectURL(blob)
+    // eslint-disable-next-line no-undef
     window.open(url)
-  } catch (err) {
-    console.error('打印失败:', err)
+  } catch {
     ElMessage.error('打印失败')
   }
 }
@@ -546,6 +540,56 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ========== 关键帧定义 ========== */
+
+/* 卡片从上方滑入 */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 卡片从下方滑入 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 淡入 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 标题图标旋转入场 */
+@keyframes iconSpin {
+  from { transform: rotate(-15deg) scale(0.8); opacity: 0; }
+  to { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+/* 按钮涟漪 */
+@keyframes btnRipple {
+  0% { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* 状态标签呼吸灯 */
+@keyframes tagPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 /* ========== 页面容器 ========== */
 .page4-container {
   width: 100%;
@@ -563,6 +607,13 @@ onMounted(() => {
   border-radius: 12px;
   border: none;
   background: #fff;
+  animation: slideDown 0.45s ease-out both;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.search-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
 }
 
 .search-card :deep(.el-card__body) {
@@ -589,6 +640,13 @@ onMounted(() => {
 .card-title .el-icon {
   font-size: 16px;
   color: #6366f1;
+  animation: iconSpin 0.5s ease-out both;
+  animation-delay: 0.2s;
+  transition: transform 0.3s ease;
+}
+
+.search-card:hover .card-title .el-icon {
+  transform: scale(1.15);
 }
 
 .search-form {
@@ -608,6 +666,17 @@ onMounted(() => {
   font-weight: 500;
 }
 
+/* 输入框聚焦光效 */
+.search-form :deep(.el-input__wrapper),
+.search-form :deep(.el-select__wrapper) {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.search-form :deep(.el-input__wrapper:focus-within),
+.search-form :deep(.el-select__wrapper:focus-within) {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
 .date-separator {
   margin: 0 8px;
   color: #909399;
@@ -621,6 +690,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 12px;
   padding: 0 2px;
+  animation: fadeIn 0.5s ease-out 0.15s both;
 }
 
 .action-left,
@@ -632,6 +702,17 @@ onMounted(() => {
 .action-left .action-btn {
   border-radius: 8px;
   font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.action-left .action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.action-left .action-btn:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .action-right .action-btn {
@@ -639,17 +720,58 @@ onMounted(() => {
   font-weight: 500;
   color: #606266;
   border-color: #dcdfe6;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 
 .action-right .action-btn:not(:disabled):hover {
   color: #6366f1;
   border-color: #6366f1;
   background: rgba(99, 102, 241, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.15);
+}
+
+.action-right .action-btn:not(:disabled):active {
+  transform: translateY(0) scale(0.96);
 }
 
 /* 各按钮主色调 */
 .action-btn.is-primary {
   box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.action-btn.is-primary:hover {
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+}
+
+.action-btn.is-success {
+  box-shadow: 0 2px 6px rgba(103, 194, 58, 0.3);
+}
+
+.action-btn.is-success:hover {
+  box-shadow: 0 4px 14px rgba(103, 194, 58, 0.45);
+}
+
+/* 按钮涟漪光效 */
+.action-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.action-btn:hover::after {
+  opacity: 1;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ========== 表格卡片 ========== */
@@ -662,6 +784,12 @@ onMounted(() => {
   border: none;
   background: #fff;
   overflow: hidden;
+  animation: slideUp 0.45s ease-out 0.1s both;
+  transition: box-shadow 0.3s ease;
+}
+
+.table-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .table-card :deep(.el-card__body) {
@@ -679,17 +807,26 @@ onMounted(() => {
   font-size: 13px;
   padding: 12px 0;
   border-bottom: 2px solid #e8ecf4;
+  transition: background 0.3s ease;
 }
 
 .table-card :deep(.el-table__body-wrapper td.el-table__cell) {
   padding: 10px 0;
   font-size: 13px;
   color: #4a4a5a;
-  transition: background 0.15s;
+  transition: background 0.25s ease;
+}
+
+.table-card :deep(.el-table__row) {
+  transition: transform 0.2s ease, background 0.25s ease;
 }
 
 .table-card :deep(.el-table__row:hover td.el-table__cell) {
   background: #f5f6ff !important;
+}
+
+.table-card :deep(.el-table__row:hover) {
+  transform: scale(1.003);
 }
 
 .table-card :deep(.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell) {
@@ -714,14 +851,42 @@ onMounted(() => {
   border-color: #ebeef5;
 }
 
-/* 链接按钮 */
+/* 链接按钮 - 下划线动画 */
 .link-btn {
   font-weight: 500;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.link-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: #6366f1;
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.link-btn:hover::after {
+  width: 100%;
+  left: 0;
 }
 
 /* 空数据占位 */
 .no-data {
   color: #c0c4cc;
+}
+
+/* 状态标签动效 */
+.table-card :deep(.el-tag) {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.table-card :deep(.el-tag:hover) {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* ========== 分页 ========== */
@@ -732,6 +897,7 @@ onMounted(() => {
   padding: 14px 20px;
   border-top: 1px solid #f0f0f0;
   background: #fafbfc;
+  animation: fadeIn 0.5s ease-out 0.3s both;
 }
 
 .pagination-container :deep(.el-pagination) {
@@ -742,8 +908,49 @@ onMounted(() => {
   color: #606266;
 }
 
+.pagination-container :deep(.el-pagination button) {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.pagination-container :deep(.el-pagination button:hover) {
+  color: #6366f1;
+  transform: scale(1.1);
+}
+
+.pagination-container :deep(.el-pager li) {
+  transition: color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.pagination-container :deep(.el-pager li:hover) {
+  color: #6366f1;
+  transform: scale(1.1);
+}
+
+.pagination-container :deep(.el-pager li.is-active:hover) {
+  transform: scale(1.1);
+}
+
 /* ========== 表格加载动画 ========== */
 .table-card :deep(.el-loading-mask) {
   border-radius: 0 0 12px 12px;
+}
+
+/* ========== 滚动条美化 ========== */
+.table-card :deep(.el-table__body-wrapper::-webkit-scrollbar) {
+  width: 6px;
+  height: 6px;
+}
+
+.table-card :deep(.el-table__body-wrapper::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
+.table-card :deep(.el-table__body-wrapper::-webkit-scrollbar-thumb) {
+  background: #c4c9d4;
+  border-radius: 3px;
+}
+
+.table-card :deep(.el-table__body-wrapper::-webkit-scrollbar-thumb:hover) {
+  background: #a0a5b0;
 }
 </style>

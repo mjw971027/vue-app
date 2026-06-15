@@ -189,6 +189,7 @@
       border
       style="width: 100%"
       max-height="300"
+      :row-class-name="getMaterialRowClass"
       @selection-change="handleMaterialSelectionChange"
     >
       <el-table-column type="selection" width="55" />
@@ -317,6 +318,12 @@
           <span v-else>{{ row.l }}</span>
         </template>
       </el-table-column>
+      <template #empty>
+        <div class="table-empty">
+          <el-icon :size="36" color="#c0c4cc"><List /></el-icon>
+          <p>暂无申请材料</p>
+        </div>
+      </template>
     </el-table>
     </div>
 
@@ -354,6 +361,12 @@
           <el-table-column prop="fileType" label="附件类型" width="100" />
           <el-table-column prop="createDate" label="上传日期" width="120" />
           <el-table-column prop="createUserId" label="上传人" width="100" />
+          <template #empty>
+            <div class="table-empty">
+              <el-icon :size="36" color="#c0c4cc"><FolderOpened /></el-icon>
+              <p>暂无附件</p>
+            </div>
+          </template>
         </el-table>
       </el-col>
 
@@ -377,6 +390,12 @@
           <el-table-column prop="stepName" label="审核节点" width="120" />
           <el-table-column prop="menuName" label="审核结果" width="100" />
           <el-table-column prop="createDate" label="审核时间" width="120" />
+          <template #empty>
+            <div class="table-empty">
+              <el-icon :size="36" color="#c0c4cc"><Checked /></el-icon>
+              <p>暂无审批记录</p>
+            </div>
+          </template>
         </el-table>
       </el-col>
     </el-row>
@@ -386,8 +405,8 @@
     <template #footer>
       <div class="dialog-footer">
         <div v-if="!isReadOnly" class="footer-buttons">
-          <el-button @click="handleSave">保存</el-button>
-          <el-button type="primary" @click="handleCommit">提交</el-button>
+          <el-button :class="{ 'is-bounce': saveBounce }" :loading="saveLoading" @click="handleSave">保存</el-button>
+          <el-button type="primary" :class="{ 'is-bounce': commitBounce }" :loading="commitLoading" @click="handleCommit">提交</el-button>
         </div>
         <div class="footer-buttons">
           <el-button @click="handleClose">关闭</el-button>
@@ -474,6 +493,10 @@ const title = ref('工装申请')
 const isReadOnly = computed(() => props.isReadOnly || false)
 const uploadDialogVisible = ref(false)
 const uploadRef = ref<{ submit: () => void }>()
+const saveBounce = ref(false)
+const commitBounce = ref(false)
+const saveLoading = ref(false)
+const commitLoading = ref(false)
 
 // 表单数据
 const formData = reactive({
@@ -611,11 +634,22 @@ const loadData = async () => {
 
 /** 新增申请材料 */
 const handleAddMaterial = () => {
-  materialData.value.push({
+  const newRow: ComponentMaterial & { _isNew?: boolean } = {
     componentsId: props.guid,
     createNode: '01',
-    activation: 'Y'
-  })
+    activation: 'Y',
+    _isNew: true
+  }
+  materialData.value.push(newRow)
+  // 2秒后移除高亮标记
+  window.setTimeout(() => {
+    delete newRow._isNew
+  }, 2000)
+}
+
+/** 材料行样式 */
+const getMaterialRowClass = ({ row }: { row: ComponentMaterial & { _isNew?: boolean } }) => {
+  return row._isNew ? 'new-row-highlight' : ''
 }
 
 /** 删除申请材料 */
@@ -745,6 +779,7 @@ const handleDownloadFile = async (row: ComponentFile) => {
 
 /** 保存 */
 const handleSave = async () => {
+  saveLoading.value = true
   try {
     const param: Record<string, unknown> = {
       guid: props.guid,
@@ -773,11 +808,16 @@ const handleSave = async () => {
       } else {
         ElMessage.success('保存成功')
       }
+      // 保存成功按钮跳动
+      saveBounce.value = true
+      window.setTimeout(() => { saveBounce.value = false }, 600)
       // 刷新页面数据
       await loadData()
     }
   } catch {
     ElMessage.error('保存失败')
+  } finally {
+    saveLoading.value = false
   }
 }
 
@@ -792,6 +832,8 @@ const handleCommit = async () => {
     await ElMessageBox.confirm('提交会保存已编辑内容，确定要提交吗？', '提示', {
       type: 'warning'
     })
+
+    commitLoading.value = true
 
     const param: Record<string, unknown> = {
       guid: props.guid,
@@ -809,12 +851,16 @@ const handleCommit = async () => {
 
     if (res.data?.flag === 1) {
       ElMessage.success('提交成功')
+      commitBounce.value = true
+      window.setTimeout(() => { commitBounce.value = false }, 600)
       emit('close', true)
     }
   } catch (error: unknown) {
     if (error !== 'cancel') {
       ElMessage.error('提交失败')
     }
+  } finally {
+    commitLoading.value = false
   }
 }
 
@@ -826,6 +872,39 @@ const handleClose = () => {
 </script>
 
 <style scoped>
+/* ========== 关键帧定义 ========== */
+
+/* 区块入场：从下方滑入 + 淡入 */
+@keyframes sectionSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 标题栏光晕流动 */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* 左侧强调条呼吸灯 */
+@keyframes accentPulse {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 0.7; transform: scaleY(1.2); }
+}
+
+/* 保存成功后按钮跳动 */
+@keyframes btnBounce {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+  60% { transform: scale(0.96); }
+}
+
 /* ========== 弹窗整体样式 ========== */
 :deep(.el-dialog) {
   border-radius: 16px;
@@ -833,7 +912,14 @@ const handleClose = () => {
 }
 
 :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(
+    135deg,
+    #667eea 0%,
+    #764ba2 50%,
+    #667eea 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
   padding: 18px 24px;
   margin: 0;
 }
@@ -842,15 +928,18 @@ const handleClose = () => {
   color: #fff;
   font-size: 16px;
   font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 :deep(.el-dialog__headerbtn .el-dialog__close) {
   color: rgba(255, 255, 255, 0.8);
   font-size: 18px;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
 :deep(.el-dialog__headerbtn:hover .el-dialog__close) {
   color: #fff;
+  transform: rotate(90deg);
 }
 
 :deep(.el-dialog__body) {
@@ -872,7 +961,21 @@ const handleClose = () => {
   margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   border: 1px solid #ebeef5;
+  /* 入场动画 */
+  animation: sectionSlideIn 0.5s ease-out both;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
+
+.form-section:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.1);
+  border-color: #c7d2fe;
+  transform: translateY(-2px);
+}
+
+/* 各区块错开入场 */
+.form-section:nth-child(1) { animation-delay: 0.05s; }
+.form-section:nth-child(2) { animation-delay: 0.15s; }
+.form-section:nth-child(3) { animation-delay: 0.25s; }
 
 /* 区块标题 */
 .form-section-header {
@@ -896,6 +999,11 @@ const handleClose = () => {
 .form-section-title .el-icon {
   font-size: 16px;
   color: #6366f1;
+  transition: transform 0.3s ease;
+}
+
+.form-section:hover .form-section-title .el-icon {
+  transform: scale(1.15);
 }
 
 .title-accent {
@@ -904,6 +1012,7 @@ const handleClose = () => {
   background: linear-gradient(180deg, #6366f1, #818cf8);
   border-radius: 2px;
   flex-shrink: 0;
+  animation: accentPulse 2.5s ease-in-out infinite;
 }
 
 /* ========== 表单样式 ========== */
@@ -917,12 +1026,34 @@ const handleClose = () => {
   margin-bottom: 18px;
 }
 
+/* 输入框聚焦光效 */
+:deep(.el-input__wrapper) {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+:deep(.el-input__wrapper:focus-within) {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+:deep(.el-select__wrapper) {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+:deep(.el-select__wrapper:focus-within) {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
 :deep(.el-input.is-disabled .el-input__wrapper) {
   background: #f5f7fa;
 }
 
 :deep(.el-select.is-disabled .el-select__wrapper) {
   background: #f5f7fa;
+}
+
+/* textarea 聚焦 */
+:deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
 /* ========== 表格样式 ========== */
@@ -938,16 +1069,26 @@ const handleClose = () => {
   font-weight: 600;
   font-size: 13px;
   padding: 10px 0;
+  transition: background 0.3s ease;
 }
 
 :deep(.el-table__body-wrapper td.el-table__cell) {
   padding: 8px 0;
   font-size: 13px;
   color: #4a4a5a;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+:deep(.el-table__row) {
+  transition: transform 0.2s ease;
 }
 
 :deep(.el-table__row:hover td.el-table__cell) {
   background: #f5f6ff !important;
+}
+
+:deep(.el-table__row:hover) {
+  transform: scale(1.005);
 }
 
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell) {
@@ -958,12 +1099,18 @@ const handleClose = () => {
   background: #f0f1ff !important;
 }
 
+/* 表格选中行高亮 */
+:deep(.el-table__body tr.current-row > td.el-table__cell) {
+  background: #eef2ff !important;
+}
+
 /* ========== 底部按钮 ========== */
 .dialog-footer {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  animation: sectionSlideIn 0.5s ease-out 0.35s both;
 }
 
 .footer-buttons {
@@ -976,9 +1123,146 @@ const handleClose = () => {
   border-radius: 8px;
   padding: 10px 28px;
   font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dialog-footer .el-button:hover {
+  transform: translateY(-2px);
+}
+
+.dialog-footer .el-button:active {
+  transform: translateY(0) scale(0.97);
 }
 
 .dialog-footer .el-button--primary {
   box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.dialog-footer .el-button--primary:hover {
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+}
+
+/* 按钮涟漪效果 */
+.dialog-footer .el-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.dialog-footer .el-button:hover::after {
+  opacity: 1;
+}
+
+/* 操作按钮区域（新增/删除/上传） */
+.form-section-header .el-button {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-section-header .el-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.form-section-header .el-button:active {
+  transform: scale(0.95);
+}
+
+/* ========== 保存成功后按钮跳动 ========== */
+.dialog-footer .el-button.is-bounce {
+  animation: btnBounce 0.5s ease;
+}
+
+/* ========== 新增行高亮闪烁 ========== */
+@keyframes newRowFlash {
+  0% {
+    box-shadow: inset 4px 0 0 #6366f1;
+    background-color: rgba(99, 102, 241, 0.12);
+  }
+  50% {
+    box-shadow: inset 4px 0 0 #6366f1;
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+  100% {
+    box-shadow: inset 4px 0 0 transparent;
+    background-color: transparent;
+  }
+}
+
+:deep(.el-table .new-row-highlight) {
+  animation: newRowFlash 2s ease-out forwards;
+}
+
+:deep(.el-table .new-row-highlight td.el-table__cell:first-child) {
+  box-shadow: inset 4px 0 0 #6366f1;
+  animation: newRowFlash 2s ease-out forwards;
+}
+
+/* ========== 表格空状态 ========== */
+.table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  gap: 8px;
+}
+
+.table-empty p {
+  margin: 0;
+  font-size: 13px;
+  color: #909399;
+}
+
+/* ========== 上传弹窗样式优化 ========== */
+:deep(.el-dialog__wrapper:has(.el-dialog[style*="500px"])) {
+  backdrop-filter: blur(2px);
+}
+
+/* 上传拖拽区域 */
+.upload-area {
+  border: 2px dashed #dcdfe6;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.3s ease, background 0.3s ease;
+  cursor: pointer;
+}
+
+.upload-area:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.03);
+}
+
+/* ========== 标签动效 ========== */
+:deep(.el-tag) {
+  transition: transform 0.2s ease;
+}
+
+:deep(.el-tag:hover) {
+  transform: scale(1.05);
+}
+
+/* ========== 滚动条美化 ========== */
+:deep(.el-dialog__body::-webkit-scrollbar) {
+  width: 6px;
+}
+
+:deep(.el-dialog__body::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
+:deep(.el-dialog__body::-webkit-scrollbar-thumb) {
+  background: #c4c9d4;
+  border-radius: 3px;
+}
+
+:deep(.el-dialog__body::-webkit-scrollbar-thumb:hover) {
+  background: #a0a5b0;
 }
 </style>

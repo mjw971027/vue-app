@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从 MiniUI 到 Vue 3 — 工装管理系统架构升级全解析</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#0d0d1a;color:#fff;overflow:hidden;height:100vh}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;padding:32px 56px;animation:fadeIn .4s ease}
+.slide.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.nav-btn{position:fixed;bottom:30px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 28px;border-radius:30px;cursor:pointer;font-size:14px;z-index:1000;transition:all .3s;backdrop-filter:blur(10px)}
+.nav-btn:hover{background:rgba(255,255,255,.2);transform:translateY(-2px)}
+#prevBtn{left:30px}#nextBtn{right:30px}
+.pg{position:fixed;bottom:38px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:13px;z-index:1000}
+.pgj{position:fixed;bottom:31px;left:50%;transform:translateX(90px);z-index:1000}
+.pgj input{width:40px;height:26px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:14px;color:#fff;text-align:center;font-size:13px;outline:none}
+.pgj input:focus{border-color:rgba(96,165,250,.5);background:rgba(255,255,255,.12)}
+.bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#818cf8,#34d399);transition:width .4s;z-index:999}
+.idx{position:fixed;top:16px;right:24px;font-size:.75rem;color:rgba(255,255,255,.3);font-family:monospace;z-index:999}
+h2{font-size:1.8rem;font-weight:700;margin-bottom:16px;line-height:1.3}
+h3{font-size:1rem;font-weight:600;margin-bottom:6px}
+p,li{font-size:.92rem;line-height:1.7;color:rgba(255,255,255,.82)}
+pre{font-family:'Consolas','Courier New',monospace;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 18px;font-size:.74rem;line-height:1.6;color:#d1fae5;overflow-x:auto;text-align:left;width:100%}
+pre .kw{color:#c084fc}pre .str{color:#fbbf24}pre .cm{color:#6b7280;font-style:italic}
+pre .fn{color:#60a5fa}pre .cls{color:#34d399}pre .num{color:#fb923c}pre .op{color:#f87171}
+
+.tag{display:inline-block;padding:3px 12px;border-radius:20px;font-size:.74rem;font-weight:600;letter-spacing:.5px}
+.tb{background:rgba(96,165,250,.18);color:#60a5fa;border:1px solid rgba(96,165,250,.35)}
+.tg{background:rgba(52,211,153,.18);color:#34d399;border:1px solid rgba(52,211,153,.35)}
+.tp{background:rgba(167,139,250,.18);color:#a78bfa;border:1px solid rgba(167,139,250,.35)}
+.to{background:rgba(251,146,60,.18);color:#fb923c;border:1px solid rgba(251,146,60,.35)}
+.tr{background:rgba(248,113,113,.18);color:#f87171;border:1px solid rgba(248,113,113,.35)}
+.ty{background:rgba(234,179,8,.18);color:#fbbf24;border:1px solid rgba(234,179,8,.35)}
+
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:20px 24px}
+.c2{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:1060px;align-items:start}
+.c3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;max-width:1060px}
+
+.cc{border-radius:12px;padding:16px 18px;position:relative}
+pre{max-height:380px}
+pre::-webkit-scrollbar{height:4px}pre::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+.cc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.cc-r{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2)}.cc-r::before{background:linear-gradient(90deg,#f87171,#fca5a5)}
+.cc-g{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)}.cc-g::before{background:linear-gradient(90deg,#10b981,#34d399)}
+.cc-b{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2)}.cc-b::before{background:linear-gradient(90deg,#6366f1,#818cf8)}
+.cc-o{background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2)}.cc-o::before{background:linear-gradient(90deg,#f97316,#fb923c)}
+.cc-p{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)}.cc-p::before{background:linear-gradient(90deg,#a78bfa,#c4b5fd)}
+.cc-y{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)}.cc-y::before{background:linear-gradient(90deg,#eab308,#fbbf24)}
+
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{background:rgba(255,255,255,.07);padding:7px 10px;text-align:left;font-weight:600;border-bottom:1px solid rgba(255,255,255,.1)}
+td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.78)}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.vs{display:flex;align-items:center;gap:8px;font-size:.82rem;color:rgba(255,255,255,.85)}
+.vs-box{padding:10px 16px;border-radius:10px;font-weight:600}
+.vs-r{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:#fca5a5}
+.vs-g{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:#6ee7b7}
+.dim{color:rgba(255,255,255,.5);font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="idx" id="idx"></div>
+<div id="show" style="position:relative;height:100vh">
+
+<!-- ===== 1 ===== -->
+<div class="slide active" id="s1" style="background:radial-gradient(ellipse at 25% 50%,rgba(99,102,241,.28),transparent 60%),radial-gradient(ellipse at 75% 25%,rgba(16,185,129,.2),transparent 60%),linear-gradient(135deg,#0d0d1a,#1a1a2e)">
+  <div style="text-align:center">
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center">
+      <span class="tag tr">MiniUI + jQuery</span><span style="font-size:1.2rem;color:rgba(255,255,255,.3)">→</span>
+      <span class="tag tb">Vue 3.5 + TS</span><span class="tag tg">Vite 8 + Pinia 3</span>
+      <span class="tag tp">前后端分离</span>
+    </div>
+    <div style="font-size:3rem;font-weight:900;background:linear-gradient(135deg,#818cf8,#34d399 60%,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.12;margin-bottom:8px">从 MiniUI 到 Vue 3</div>
+    <div style="font-size:1.25rem;color:rgba(255,255,255,.58);margin-bottom:6px">工装管理系统架构升级全解析</div>
+    <div style="font-size:.85rem;color:rgba(255,255,255,.35)">为什么升级 · 改了什么 · 新特性怎么用</div>
+  </div>
+</div>
+
+<!-- ===== 目录 ===== -->
+<div class="slide" id="toc" style="background:linear-gradient(135deg,#0d0d1a,#1a1a2e)">
+  <h2 style="font-size:1.6rem;margin-bottom:18px">📋 内容目录</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 28px;width:100%;max-width:860px;font-size:.82rem;line-height:2">
+    <div>01 · 封面</div>
+    <div>02 · 旧版架构回顾</div>
+    <div>03 · 新版架构全貌</div>
+    <div>04 · 核心对比总表</div>
+    <div>05 · 代码对比：数据绑定</div>
+    <div>06 · 条件/列表渲染</div>
+    <div>07 · 数据更新机制</div>
+    <div>08 · 声明式 vs 命令式</div>
+    <div>09 · 组件化</div>
+    <div style="color:#60a5fa">10 · Vue 3 响应式系统</div>
+    <div style="padding-left:16px;color:rgba(255,255,255,.55)">└ ref · reactive · computed</div>
+    <div>11 · SFC 单文件组件</div>
+    <div>12-14 · Vue Router</div>
+    <div>15-16 · Pinia 状态管理</div>
+    <div>17 · Axios 请求封装</div>
+    <div>18 · Token 刷新队列</div>
+    <div>19 · TypeScript</div>
+    <div>20 · Vite 构建</div>
+    <div>21 · watch + 生命周期</div>
+    <div>22 · 组件通信 Props/Emits</div>
+    <div>23 · 项目核心规范</div>
+    <div>24 · Docker 部署</div>
+    <div>25 · 升级收益总结</div>
+  </div>
+  <div style="margin-top:16px;font-size:.75rem;color:rgba(255,255,255,.3)">← → 箭头翻页 · Space 下一页 · Home/End 首尾</div>
+</div>
+
+<!-- ===== 2 — 旧版架构回顾 ===== -->
+<div class="slide" id="s2" style="background:linear-gradient(135deg,#0f172a,#1e1b4b)">
+  <h2>📦 旧版架构：前后端一体 + HTML + MiniUI</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.95rem">项目结构</div>
+      <pre style="font-size:.71rem"><span class="cm">// 一个 Maven 工程 = 前端 + 后端</span>
+my-project/
+├── src/main/java/...   <span class="cm">// Java 后端代码</span>
+├── src/main/resources/
+│   ├── static/
+│   │   ├── page1.html   <span class="cm">// 前端页面</span>
+│   │   ├── page2.html
+│   │   ├── js/
+│   │   │   └── miniui.js  <span class="cm">// MiniUI 插件</span>
+│   │   └── css/
+│   └── application.yml
+├── pom.xml              <span class="cm">// 统一的依赖管理</span>
+
+<span class="cm">// 部署：打成一个 war/jar 包一起部署</span>
+<span class="cm">// 启动 = 同时启动前后端，不同端口</span></pre>
+    </div>
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.95rem">技术栈</div>
+      <table style="font-size:.72rem">
+        <tr><td style="color:#fca5a5">UI 框架</td><td><strong>MiniUI</strong>（jQuery 企业插件）</td></tr>
+        <tr><td style="color:#fca5a5">DOM 操作</td><td><strong>jQuery $</strong> + mini.get()</td></tr>
+        <tr><td style="color:#fca5a5">页面跳转</td><td><strong>window.location.href</strong> 全量刷新</td></tr>
+        <tr><td style="color:#fca5a5">数据请求</td><td>$.ajax / mini.Form.getData()</td></tr>
+        <tr><td style="color:#fca5a5">表格</td><td>mini.DataGrid</td></tr>
+        <tr><td style="color:#fca5a5">表单</td><td>mini.Form + ID 绑定</td></tr>
+        <tr><td style="color:#fca5a5">构建工具</td><td>无（直接写 HTML/JS）</td></tr>
+        <tr><td style="color:#fca5a5">状态管理</td><td>无（数据藏在 DOM 里）</td></tr>
+      </table>
+      <div style="margin-top:8px;padding:10px 12px;background:rgba(248,113,113,.1);border-radius:8px;font-size:.73rem;color:rgba(255,255,255,.7)">
+        <strong>核心问题：</strong>前端代码放在后端项目中，开发/部署都绑定在一起；没有独立的构建工具；没有组件化概念；页面间状态要靠后端 Session 或 URL 参数传递。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3 — 新版架构全貌 ===== -->
+<div class="slide" id="s3" style="background:linear-gradient(135deg,#0a1628,#0d1f36)">
+  <h2>🚀 新版架构：前后端分离 + Vue 3 + Element Plus</h2>
+  <div class="c2">
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.95rem">两个独立工程</div>
+      <pre style="font-size:.71rem"><span class="cm">// 前端工程：vue-app（独立 Vite 项目）</span>
+vue-app/
+├── src/
+│   ├── api/        <span class="cm">// API 封装层</span>
+│   ├── views/      <span class="cm">// 页面组件</span>
+│   ├── stores/     <span class="cm">// Pinia 状态管理</span>
+│   ├── router/     <span class="cm">// Vue Router 路由</span>
+│   └── utils/      <span class="cm">// 工具函数</span>
+├── .env            <span class="cm">// 环境变量</span>
+├── vite.config.ts  <span class="cm">// 构建配置</span>
+└── package.json    <span class="cm">// 独立的依赖管理</span>
+
+<span class="cm">// 后端工程：my-vue（Spring Boot Maven 项目）</span>
+my-vue/
+├── src/main/java/com/mjw/vueback/
+│   └── demos/web/
+│       ├── controller/  <span class="cm">// REST 接口</span>
+│       ├── service/     <span class="cm">// 业务逻辑</span>
+│       └── mapper/      <span class="cm">// 数据库操作</span>
+├── docker/              <span class="cm">// Docker 部署</span>
+└── pom.xml</pre>
+    </div>
+    <div>
+      <table style="margin-bottom:12px;font-size:.72rem">
+        <tr><th style="color:#34d399">对比项</th><th style="color:#f87171">旧版</th><th style="color:#34d399">新版</th></tr>
+        <tr><td>工程</td><td style="color:#fca5a5">1 个 Maven</td><td style="color:#6ee7b7">2 个独立工程</td></tr>
+        <tr><td>前端端口</td><td style="color:#fca5a5">同后端</td><td style="color:#6ee7b7">5173（Vite）</td></tr>
+        <tr><td>后端端口</td><td style="color:#fca5a5">8080</td><td style="color:#6ee7b7">8082（Spring Boot）</td></tr>
+        <tr><td>UI 框架</td><td style="color:#fca5a5">MiniUI</td><td style="color:#6ee7b7">Element Plus</td></tr>
+        <tr><td>语言</td><td style="color:#fca5a5">JS + HTML</td><td style="color:#6ee7b7">TypeScript + Vue SFC</td></tr>
+        <tr><td>构建</td><td style="color:#fca5a5">无</td><td style="color:#6ee7b7">Vite</td></tr>
+        <tr><td>路由</td><td style="color:#fca5a5">后端/全量刷新</td><td style="color:#6ee7b7">Vue Router SPA</td></tr>
+        <tr><td>认证</td><td style="color:#fca5a5">Session</td><td style="color:#6ee7b7">JWT + Redis</td></tr>
+      </table>
+      <div style="padding:10px 14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.72);line-height:1.8">
+        <strong style="color:#34d399">关键变化：</strong><br>
+        前端不再依赖后端环境即可启动开发（npm run dev）<br>
+        前后端通过 JSON API 通信，后端可对接多端<br>
+        Docker Compose 三服务编排部署
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4 — 对比总结 ===== -->
+<div class="slide" id="s4" style="background:linear-gradient(135deg,#1a0533,#0d1f36)">
+  <h2>⚖️ 核心区别：一表看懂</h2>
+  <div style="width:100%;max-width:1000px">
+    <table>
+      <tr><th style="width:18%">维度</th><th style="width:41%;color:#f87171">❌ MiniUI 旧版</th><th style="width:41%;color:#34d399">✅ Vue 3 新版</th></tr>
+      <tr><td><strong>工程结构</strong></td><td>前后端混在一个 Maven 工程里</td><td>独立 Vite 前端 + 独立 Spring Boot 后端</td></tr>
+      <tr><td><strong>开发模式</strong></td><td>改前端要重启后端才能看到效果</td><td>前端独立 npm run dev，HMR 热更新毫秒级</td></tr>
+      <tr><td><strong>页面跳转</strong></td><td>window.location.href 全量刷新（1-2 秒白屏）</td><td>Vue Router 无刷新切换（毫秒级）</td></tr>
+      <tr><td><strong>数据处理</strong></td><td>mini.get("id").getValue() 手动从 DOM 取值</td><td>v-model 绑定，ref.value 直接读写</td></tr>
+      <tr><td><strong>列表更新</strong></td><td>grid.load() 全量重新渲染</td><td>list.value = newData，自动精确更新</td></tr>
+      <tr><td><strong>组件复用</strong></td><td>复制粘贴 HTML，改一处要改 N 处</td><td>定义 .vue 组件，import 一处，全局生效</td></tr>
+      <tr><td><strong>样式管理</strong></td><td>全局 CSS，命名冲突靠手动命名规范</td><td>scoped 自动隔离，同名字也不冲突</td></tr>
+      <tr><td><strong>状态管理</strong></td><td>数据散落在 DOM/Session/URL 参数中</td><td>Pinia 集中管理，响应式自动同步</td></tr>
+      <tr><td><strong>类型安全</strong></td><td>纯 JavaScript，拼写错误不报错</td><td>TypeScript 编译时检查，IDE 自动补全</td></tr>
+      <tr><td><strong>部署</strong></td><td>一个 war 包，前后端绑定</td><td>Docker Compose 三服务独立编排</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== 5 — 代码对比：数据读取 ===== -->
+<div class="slide" id="s5" style="background:linear-gradient(135deg,#0f172a,#0a1628)">
+  <h2>📝 写法对比 ①：数据绑定 — getValue() vs v-model</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">MiniUI 方式：手动从 DOM 取值/赋值</div>
+      <pre style="font-size:.72rem"><span class="cm">// HTML — 每个控件靠 ID 定位</span>
+&lt;<span class="fn">input</span> <span class="str">id</span>=<span class="str">"txtName"</span> <span class="str">class</span>=<span class="str">"mini-textbox"</span>/&gt;
+&lt;<span class="fn">select</span> <span class="str">id</span>=<span class="str">"selDept"</span> <span class="str">class</span>=<span class="str">"mini-combobox"</span>/&gt;
+
+<span class="cm">// JS — 手动取值（步骤多、易出错）</span>
+<span class="kw">var</span> txtName = mini.<span class="fn">get</span>(<span class="str">"txtName"</span>);
+<span class="kw">var</span> name = txtName.<span class="fn">getValue</span>();     <span class="cm">// ① 找到控件 → ② 取值</span>
+
+<span class="kw">var</span> selDept = mini.<span class="fn">get</span>(<span class="str">"selDept"</span>);
+<span class="kw">var</span> deptId = selDept.<span class="fn">getValue</span>();
+
+<span class="cm">// ===== 手动赋值 =====</span>
+mini.<span class="fn">get</span>(<span class="str">"txtName"</span>).<span class="fn">setValue</span>(<span class="str">"张三"</span>);
+mini.<span class="fn">get</span>(<span class="str">"selDept"</span>).<span class="fn">setValue</span>(<span class="str">"D001"</span>);
+
+<span class="cm">// ===== 提交表单 — 逐个字段取 =====</span>
+<span class="kw">var</span> form = <span class="kw">new</span> mini.<span class="fn">Form</span>(<span class="str">"#form1"</span>);
+<span class="kw">var</span> data = form.<span class="fn">getData</span>(<span class="kw">true</span>);
+
+<span class="cm">// ⚠️ 核心问题：
+//   数据和 UI 是两份独立的
+//   每次操作都要"找到控件 → 操作"
+//   ID 拼错、控件名记错 → 运行时才发现</span></pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.88rem">Vue 3 方式：v-model 双向绑定</div>
+      <pre style="font-size:.72rem"><span class="cm">&lt;!-- 模板 — 声明式绑定，不需要 ID --&gt;</span>
+&lt;<span class="fn">input</span> <span class="kw">v-model</span>=<span class="str">"form.name"</span> /&gt;
+&lt;<span class="fn">select</span> <span class="kw">v-model</span>=<span class="str">"form.deptId"</span>&gt;
+  &lt;<span class="fn">option</span> <span class="kw">v-for</span>=<span class="str">"d in depts"</span> <span class="str">:value</span>=<span class="str">"d.id"</span>&gt;
+    {{ d.name }}
+  &lt;/<span class="fn">option</span>&gt;
+&lt;/<span class="fn">select</span>&gt;
+
+<span class="cm">// JS — 定义数据，UI 自动同步</span>
+<span class="kw">const</span> form = <span class="fn">reactive</span>({
+  name: <span class="str">''</span>,
+  deptId: <span class="str">''</span>
+});
+
+<span class="cm">// ===== 读数据：直接拿变量！ =====</span>
+console.<span class="fn">log</span>(form.name);    <span class="cm">// 永远是最新值</span>
+console.<span class="fn">log</span>(form.deptId);
+
+<span class="cm">// ===== 写数据：直接赋值！ =====</span>
+form.name = <span class="str">'张三'</span>;          <span class="cm">// UI 自动更新</span>
+form.deptId = <span class="str">'D001'</span>;        <span class="cm">// 下拉框自动选中</span>
+
+<span class="cm">// ===== 提交：直接拿对象 =====</span>
+<span class="kw">await</span> <span class="fn">api.submit</span>({ data: {...form} });
+
+<span class="cm">// ⭐ 核心：数据和 UI 是同一份
+//   不需要 mini.get()，不需要 getValue()
+//   TypeScript 在编译时就能发现拼写错误</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 6 — 代码对比：条件/列表渲染 ===== -->
+<div class="slide" id="s6" style="background:linear-gradient(135deg,#071a2e,#1a0a2e)">
+  <h2>📝 写法对比 ②：条件渲染 &amp; 列表渲染</h2>
+  <div class="c2">
+    <div>
+      <div class="cc cc-r" style="margin-bottom:12px">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.85rem">MiniUI — 条件显隐：手动 display + innerHTML</div>
+        <pre style="font-size:.7rem"><span class="cm">// 根据登录状态，切换页面区域</span>
+<span class="kw">var</span> el = document.<span class="fn">getElementById</span>(<span class="str">'msg'</span>);
+<span class="kw">if</span> (isLogin) {
+  el.style.display = <span class="str">'block'</span>;
+  el.innerHTML = <span class="str">'欢迎，'</span> + userName;
+} <span class="kw">else</span> {
+  el.innerHTML = <span class="str">'&lt;a href="/login"&gt;请登录&lt;/a&gt;'</span>;
+}</pre>
+      </div>
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.85rem">MiniUI — 列表：手动拼接 HTML 字符串</div>
+        <pre style="font-size:.7rem"><span class="kw">var</span> html = <span class="str">''</span>;
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; list.length; i++) {
+  <span class="kw">var</span> item = list[i];
+  html += <span class="str">'&lt;tr&gt;'</span> +
+    <span class="str">'&lt;td&gt;'</span> + item.id + <span class="str">'&lt;/td&gt;'</span> +
+    <span class="str">'&lt;td&gt;'</span> + item.name + <span class="str">'&lt;/td&gt;'</span> +
+    <span class="str">'&lt;/tr&gt;'</span>;
+}
+$(<span class="str">'#tbody'</span>).<span class="fn">html</span>(html);  <span class="cm">// 全量替换</span></pre>
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:12px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">Vue 3 — 条件：v-if / v-else 声明式</div>
+        <pre style="font-size:.7rem"><span class="cm">&lt;!-- 一行搞定，多状态也清晰 --&gt;</span>
+&lt;<span class="fn">div</span> <span class="kw">v-if</span>=<span class="str">"isLogin"</span>&gt;
+  欢迎，{{ userName }}
+&lt;/<span class="fn">div</span>&gt;
+&lt;<span class="fn">div</span> <span class="kw">v-else</span>&gt;
+  &lt;<span class="fn">a</span> <span class="str">href</span>=<span class="str">"/login"</span>&gt;请登录&lt;/<span class="fn">a</span>&gt;
+&lt;/<span class="fn">div</span>&gt;
+
+<span class="cm">&lt;!-- v-show：频繁切换用（DOM还在） --&gt;</span>
+&lt;<span class="fn">div</span> <span class="kw">v-show</span>=<span class="str">"visible"</span>&gt;...&lt;/<span class="fn">div</span>&gt;</pre>
+      </div>
+      <div class="cc cc-g">
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">Vue 3 — 列表：v-for 声明式 + 精确更新</div>
+        <pre style="font-size:.7rem"><span class="cm">&lt;!-- 写一行模板，自动循环 --&gt;</span>
+&lt;<span class="fn">tr</span> <span class="kw">v-for</span>=<span class="str">"item in list"</span> <span class="str">:key</span>=<span class="str">"item.id"</span>&gt;
+  &lt;<span class="fn">td</span>&gt;{{ item.id }}&lt;/<span class="fn">td</span>&gt;
+  &lt;<span class="fn">td</span>&gt;{{ item.name }}&lt;/<span class="fn">td</span>&gt;
+&lt;/<span class="fn">tr</span>&gt;
+
+<span class="cm">// 数据变了直接赋值，Vue 自动更新 DOM
+// 只更新变化的那一行，不是全量替换</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 7 — 响应式更新对比 ===== -->
+<div class="slide" id="s7" style="background:linear-gradient(135deg,#0a1628,#0f172a)">
+  <h2>📝 写法对比 ③：更新数据后 — 手动刷 N 处 vs 自动同步</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">MiniUI：改完数据 → 手动更新每一处 UI</div>
+      <pre style="font-size:.72rem"><span class="cm">// 场景：审批通过了一个工装申请</span>
+order.maStatus = <span class="str">'03'</span>;
+
+<span class="cm">// ===== 需要手动更新所有相关 UI =====</span>
+
+<span class="cm">// 1. 状态标签 → 改文字 + 改颜色</span>
+mini.<span class="fn">get</span>(<span class="str">'statusBadge'</span>)
+  .<span class="fn">setValue</span>(<span class="str">'已完成'</span>);
+document.<span class="fn">getElementById</span>(<span class="str">'statusBadge'</span>)
+  .className = <span class="str">'badge badge-success'</span>;
+
+<span class="cm">// 2. 操作按钮 → 隐藏编辑/删除</span>
+mini.<span class="fn">get</span>(<span class="str">'btnEdit'</span>).<span class="fn">setVisible</span>(<span class="kw">false</span>);
+mini.<span class="fn">get</span>(<span class="str">'btnDelete'</span>).<span class="fn">setVisible</span>(<span class="kw">false</span>);
+
+<span class="cm">// 3. 统计面板 → 重新加载</span>
+mini.<span class="fn">get</span>(<span class="str">'completedCount'</span>)
+  .<span class="fn">setValue</span>(<span class="fn">recount</span>());
+grid.<span class="fn">reload</span>();
+
+<span class="cm">// ⚠️ 忘更新任何一处 → 数据不一致！</span></pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.88rem">Vue 3：改完数据 → 一切自动更新</div>
+      <pre style="font-size:.72rem"><span class="cm">// 场景：审批通过了一个工装申请</span>
+order.<span class="kw">value</span>.maStatus = <span class="str">'03'</span>;
+
+<span class="cm">// ===== 什么都不用做！Vue 自动处理：=====
+
+// 1. 状态标签 → computed 自动变色</span>
+<span class="kw">const</span> badgeColor = <span class="fn">computed</span>(() =&gt;
+  order.<span class="kw">value</span>.maStatus === <span class="str">'03'</span>
+    ? <span class="str">'success'</span> : <span class="str">'warning'</span>
+);
+
+<span class="cm">// 2. 按钮 → v-if 自动隐藏</span>
+&lt;<span class="fn">button</span>
+  <span class="kw">v-if</span>=<span class="str">"order.maStatus !== '03'"</span>
+  <span class="str">@click</span>=<span class="str">"handleEdit"</span>&gt;编辑
+&lt;/<span class="fn">button</span>&gt;
+
+<span class="cm">// 3. 列表 → 数据变了自动重渲染</span>
+tableData.<span class="kw">value</span> = newData;
+
+<span class="cm">// ⭐ 所有地方自动同步，绝不会遗漏！</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 8 — 声明式 vs 命令式 ===== -->
+<div class="slide" id="s8" style="background:linear-gradient(135deg,#0f1a2e,#1a0533)">
+  <h2>🧠 根本区别：声明式 vs 命令式编程</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.88rem">❌ 命令式（Imperative）：告诉电脑 <strong>怎么做</strong></div>
+      <pre style="font-size:.73rem"><span class="cm">// ===== 任务：显示"欢迎，张三" =====</span>
+<span class="cm">// 你必须一步步告诉电脑每个操作</span>
+
+<span class="kw">var</span> container = document
+  .<span class="fn">getElementById</span>(<span class="str">'app'</span>);       <span class="cm">// 1.找容器</span>
+<span class="kw">var</span> div = document
+  .<span class="fn">createElement</span>(<span class="str">'div'</span>);         <span class="cm">// 2.建元素</span>
+div.className = <span class="str">'welcome'</span>;         <span class="cm">// 3.设类名</span>
+div.textContent =
+  <span class="str">'欢迎，'</span> + userName;            <span class="cm">// 4.设文本</span>
+container.<span class="fn">appendChild</span>(div);        <span class="cm">// 5.挂上去</span>
+
+<span class="cm">// ===== 更新 = 重复步骤 =====</span>
+div.textContent = <span class="str">'欢迎，李四'</span>;  <span class="cm">// 再手动改</span>
+container.<span class="fn">removeChild</span>(div);      <span class="cm">// 要删再手动</span></pre>
+      <div class="dim" style="margin-top:6px">你描述的是<b>过程</b>：每一步计算机操作</div>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.88rem">✅ 声明式（Declarative）：告诉电脑 <strong>要什么</strong></div>
+      <pre style="font-size:.73rem"><span class="cm">&lt;!-- ===== 任务：显示"欢迎，张三" ===== --&gt;</span>
+<span class="cm">&lt;!-- 直接描述你想要的最终结果 --&gt;</span>
+
+&lt;<span class="kw">template</span>&gt;
+  &lt;<span class="fn">div</span>
+    <span class="kw">v-if</span>=<span class="str">"isLogin"</span>
+    <span class="str">class</span>=<span class="str">"welcome"</span>
+  &gt;
+    欢迎，{{ userName }}
+  &lt;/<span class="fn">div</span>&gt;
+&lt;/<span class="kw">template</span>&gt;
+
+<span class="kw">const</span> isLogin = <span class="fn">ref</span>(<span class="kw">true</span>);
+<span class="kw">const</span> userName = <span class="fn">ref</span>(<span class="str">'张三'</span>);
+
+<span class="cm">// ===== 更新 = 改数据 =====</span>
+userName.<span class="kw">value</span> = <span class="str">'李四'</span>;  <span class="cm">// 只改数据，UI 自动变</span>
+isLogin.<span class="kw">value</span> = <span class="kw">false</span>;   <span class="cm">// UI 自动消失</span></pre>
+      <div class="dim" style="margin-top:6px">你描述的是<b>结果</b>："这个位置显示什么"</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;font-size:.85rem;color:rgba(255,255,255,.52);text-align:center;max-width:800px">
+    <strong style="color:#34d399">生活类比：</strong>
+    命令式 = "去厨房→开冰箱→拿鸡蛋→磕开→倒碗里"（每一步怎么做）<br>
+    声明式 = "我要一个煎蛋"（要什么结果）
+  </div>
+</div>
+
+<!-- ===== 9 — 组件化对比 ===== -->
+<div class="slide" id="s9" style="background:linear-gradient(135deg,#0f172a,#1a0a2e)">
+  <h2>🧩 组件化：复制粘贴 vs import 复用</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">MiniUI 时代：3 个页面 → 复制粘贴 3 份卡片代码</div>
+      <pre style="font-size:.7rem"><span class="cm">&lt;!-- page1.html — 用户信息卡片 --&gt;</span>
+&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;
+  &lt;<span class="fn">img</span> <span class="str">src</span>=<span class="str">"avatar.jpg"</span>&gt;
+  &lt;<span class="fn">h3</span>&gt;张三&lt;/<span class="fn">h3</span>&gt;
+  &lt;<span class="fn">p</span>&gt;技术部&lt;/<span class="fn">p</span>&gt;
+  &lt;<span class="fn">button</span> onclick=<span class="str">"editUser()"</span>&gt;编辑&lt;/<span class="fn">button</span>&gt;
+&lt;/<span class="fn">div</span>&gt;
+
+<span class="cm">&lt;!-- page2.html — 完全相同的卡片（复制粘贴） --&gt;</span>
+&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;...&lt;/<span class="fn">div</span>&gt;
+
+<span class="cm">&lt;!-- page3.html — 又一遍 --&gt;</span>
+&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;...&lt;/<span class="fn">div</span>&gt;
+
+<span class="cm">// 产品说："卡片加个删除按钮" → 改 3 个文件</span>
+<span class="cm">// 产品又说："把部门改成蓝底白字" → 再改 3 个文件</span>
+<span class="cm">// 每改一次 = 容易漏改一处 → 三个页面不一致</span></pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.88rem">Vue 3 时代：定义一个组件，3 个页面 import 一行复用</div>
+      <pre style="font-size:.72rem"><span class="cm">&lt;!-- UserCard.vue — 写一次，到处用 --&gt;</span>
+&lt;<span class="kw">template</span>&gt;
+  &lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;
+    &lt;<span class="fn">img</span> <span class="str">:src</span>=<span class="str">"avatar"</span>&gt;
+    &lt;<span class="fn">h3</span>&gt;{{ name }}&lt;/<span class="fn">h3</span>&gt;
+    &lt;<span class="fn">p</span>&gt;{{ dept }}&lt;/<span class="fn">p</span>&gt;
+    &lt;<span class="fn">button</span> <span class="str">@click</span>=<span class="str">"$emit('delete')"</span>&gt;删除&lt;/<span class="fn">button</span>&gt;
+  &lt;/<span class="fn">div</span>&gt;
+&lt;/<span class="kw">template</span>&gt;
+
+<span class="cm">&lt;!-- page1.vue / page2.vue / page3.vue — 一行！ --&gt;</span>
+&lt;<span class="fn">UserCard</span>
+  <span class="str">:name</span>=<span class="str">"'张三'"</span> <span class="str">:dept</span>=<span class="str">"'技术部'"</span>
+  <span class="str">:avatar</span>=<span class="str">"'avatar.jpg'"</span>
+  <span class="str">@delete</span>=<span class="str">"handleDelete"</span>
+/&gt;
+
+<span class="cm">// 加按钮 → 只改 UserCard.vue → 全局生效
+// 改样式 → 只改 UserCard.vue → 全局一致</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 10 — Vue 3 核心：响应式系统 ===== -->
+<div class="slide" id="s10" style="background:linear-gradient(135deg,#0d1f36,#071a2e)">
+  <h2>⚡ Vue 3 核心机制：响应式系统（Reactivity）</h2>
+  <div class="c3">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:.85rem">ref() — 基础响应式</div>
+      <pre style="font-size:.71rem"><span class="cm">// 包装基本类型：string/number/boolean</span>
+<span class="kw">const</span> count = <span class="fn">ref</span>(<span class="num">0</span>);
+<span class="kw">const</span> loading = <span class="fn">ref</span>(<span class="kw">false</span>);
+
+<span class="cm">// 也能包装对象/数组</span>
+<span class="kw">const</span> user = <span class="fn">ref</span>&lt;User | <span class="kw">null</span>&gt;(<span class="kw">null</span>);
+<span class="kw">const</span> list = <span class="fn">ref</span>&lt;Item[]&gt;([]);
+
+<span class="cm">// JS 中需要 .value</span>
+count.<span class="kw">value</span>++;                <span class="cm">// 模板自动解包</span>
+user.<span class="kw">value</span> = { name: <span class="str">'李四'</span> };
+list.<span class="kw">value</span> = newData;         <span class="cm">// 全部替换</span></pre>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.5);margin-top:4px">适合：单个变量、API 返回数据、列表</div></div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">reactive() — 对象响应式</div>
+      <pre style="font-size:.71rem"><span class="cm">// 包装对象，不需要 .value</span>
+<span class="kw">const</span> form = <span class="fn">reactive</span>({
+  username: <span class="str">''</span>, password: <span class="str">''</span>
+});
+<span class="kw">const</span> pagination = <span class="fn">reactive</span>({
+  currentPage: <span class="num">1</span>, pageSize: <span class="num">50</span>
+});
+
+<span class="cm">// 直接读写属性</span>
+form.username = <span class="str">'admin'</span>;
+pagination.currentPage = <span class="num">2</span>;
+
+<span class="cm">// ⚠️ 不可解构，会丢失响应式！
+// const { username } = form; ← 错</span></pre>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.5);margin-top:4px">适合：表单数据、配置对象、分页</div></div>
+    <div class="cc cc-o">
+      <div style="font-weight:700;color:#fb923c;margin-bottom:4px;font-size:.85rem">computed() — 计算属性</div>
+      <pre style="font-size:.71rem"><span class="cm">// 从现有数据派生，有缓存！</span>
+<span class="kw">const</span> fullName = <span class="fn">computed</span>(() =>
+  firstName.<span class="kw">value</span> + <span class="str">' '</span> + lastName.<span class="kw">value</span>
+);
+
+<span class="cm">// 项目实例：只读判断</span>
+<span class="kw">const</span> isReadOnly = <span class="fn">computed</span>(() =>
+  !(<span class="str">'00'</span> === maStatus || <span class="str">'01'</span> === maStatus)
+);
+
+<span class="cm">// 缓存：依赖不变 → 不重算</span>
+<span class="cm">// 访问 3 次 fullName → 只算 1 次</span></pre>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.5);margin-top:4px">适合：需要缓存的计算、模板多次引用</div></div>
+  </div>
+</div>
+
+<!-- ===== 新增: ref 详解 ===== -->
+<div class="slide" id="s10a" style="background:linear-gradient(135deg,#0a1628,#0f172a)">
+  <h2>📌 ref 详解 — Vue 3 最基础的响应式 API</h2>
+  <div class="c2">
+    <div>
+      <div class="cc cc-b" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:.85rem">ref 的本质</div>
+        <pre style="font-size:.72rem"><span class="cm">// ref 把普通值包装成一个响应式对象</span>
+<span class="kw">const</span> count = <span class="fn">ref</span>(<span class="num">0</span>)
+<span class="cm">// count 不是数字，是一个 Ref 对象：{ value: 0 }
+// 但 Vue 会自动追踪谁读了 count.value
+// 当 count.value 变了，自动通知所有读者</span>
+
+<span class="kw">const</span> name = <span class="fn">ref</span>(<span class="str">'张三'</span>)
+<span class="kw">const</span> loading = <span class="fn">ref</span>(<span class="kw">false</span>)
+<span class="kw">const</span> user = <span class="fn">ref</span>&lt;User | <span class="kw">null</span>&gt;(<span class="kw">null</span>)
+<span class="kw">const</span> list = <span class="fn">ref</span>&lt;Item[]&gt;([])
+
+<span class="cm">// ===== JS 中必须用 .value =====</span>
+count.<span class="kw">value</span> = <span class="num">10</span>
+name.<span class="kw">value</span> = <span class="str">'李四'</span>
+loading.<span class="kw">value</span> = <span class="kw">true</span>
+list.<span class="kw">value</span> = newData   <span class="cm">// 整个数组替换</span>
+
+<span class="cm">// ===== 模板中自动解包！不用 .value =====</span>
+<span class="cm">// &lt;div&gt;{{ count }}&lt;/div&gt;   ← 显示 10
+// &lt;input v-model="name"&gt;  ← 双向绑定</span></pre>
+      </div>
+      <div class="cc cc-r" style="padding:10px 14px">
+        <div style="font-size:.76rem;font-weight:600;color:#f87171;margin-bottom:3px">⚠️ 常见误区</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.8">
+          · <strong>忘记写 .value：</strong>JS 里 <code>count = 10</code> 不会生效<br>
+          · <strong>模板里写了 .value：</strong><code>{{ count.value }}</code> 没必要<br>
+          · <strong>ref 包对象时：</strong>改属性需要 <code>user.value.name = 'x'</code>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">你项目中最常见的 ref 用法</div>
+        <pre style="font-size:.7rem"><span class="cm">// ① 基础状态标识</span>
+<span class="kw">const</span> loading = <span class="fn">ref</span>(<span class="kw">false</span>)
+<span class="kw">const</span> errorMsg = <span class="fn">ref</span>(<span class="str">''</span>)
+<span class="kw">const</span> submitting = <span class="fn">ref</span>(<span class="kw">false</span>)
+
+<span class="cm">// ② API 返回的数据（可整体替换为 null）</span>
+<span class="kw">const</span> user = <span class="fn">ref</span>&lt;UserInfo | <span class="kw">null</span>&gt;(<span class="kw">null</span>)
+<span class="kw">const</span> tableData = <span class="fn">ref</span>&lt;ComponentItem[]&gt;([])
+<span class="kw">const</span> settings = <span class="fn">ref</span>&lt;Setting[]&gt;([])
+
+<span class="cm">// ③ 组件实例引用（模板 ref="xxx"）</span>
+<span class="kw">const</span> formRef = <span class="fn">ref</span>&lt;FormInstance&gt;()
+<span class="kw">const</span> uploadRef = <span class="fn">ref</span>&lt;{ submit: () => <span class="kw">void</span> }&gt;()
+formRef.<span class="kw">value</span>?.<span class="fn">validate</span>()
+uploadRef.<span class="kw">value</span>?.<span class="fn">submit</span>()
+
+<span class="cm">// ④ Pinia store 中的状态</span>
+<span class="kw">const</span> token = <span class="fn">ref</span>(getToken())
+<span class="kw">const</span> isLoggedIn = <span class="fn">ref</span>(isAuthenticated())</pre>
+      </div>
+      <div class="cc cc-o" style="padding:10px 14px;margin-bottom:8px">
+        <div style="font-size:.76rem;font-weight:600;color:#fb923c;margin-bottom:3px">💡 ref vs 普通变量</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.8">
+          <code>let count = 0</code> → 改了模板不知道<br>
+          <code>const count = ref(0)</code> → 改了模板自动刷新<br>
+          <strong>ref 的唯一价值：让 Vue 知道这个值变了。</strong>
+        </div>
+      </div>
+      <div class="cc cc-b" style="padding:12px 16px;margin-top:8px">
+        <div style="font-size:.76rem;font-weight:600;color:#60a5fa;margin-bottom:3px">💡 判断口诀 + 注意事项</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
+          <strong>✅ 用 ref：</strong>单个值、整体替换、可为 null<br>
+          <strong>✅ 用 reactive：</strong>表单/配置/分页等多字段对象<br>
+          <strong>❌ 不推荐 ref：</strong>表单数据对象（全 .value 麻烦）<br>
+          不确定 → 用 ref，它最通用
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 新增: reactive 详解 ===== -->
+<div class="slide" id="s10c" style="background:linear-gradient(135deg,#0a1628,#0f172a)">
+  <h2>📦 reactive 详解 — 对象级别的响应式</h2>
+  <div class="c2">
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">reactive 的本质</div>
+        <pre style="font-size:.72rem"><span class="cm">// reactive 深度代理一个对象的所有属性</span>
+<span class="kw">const</span> form = <span class="fn">reactive</span>({
+  username: <span class="str">''</span>,
+  password: <span class="str">''</span>,
+  remember: <span class="kw">false</span>
+})
+
+<span class="cm">// ===== 直接读写属性！不需要 .value =====</span>
+form.username = <span class="str">'admin'</span>       <span class="cm">// ✅ 响应式</span>
+form.password = <span class="str">'123456'</span>
+form.remember = <span class="kw">true</span>
+console.<span class="fn">log</span>(form.username)   <span class="cm">// 'admin'</span>
+
+<span class="cm">// ===== 深层响应式 =====</span>
+<span class="kw">const</span> order = <span class="fn">reactive</span>({
+  id: <span class="num">1</span>,
+  items: [{ name: <span class="str">'工装A'</span>, qty: <span class="num">2</span> }]
+})
+order.items[<span class="num">0</span>].qty = <span class="num">5</span>  <span class="cm">// ✅ 嵌套也响应式！</span></pre>
+      </div>
+      <div class="cc cc-r" style="padding:10px 14px">
+        <div style="font-size:.76rem;font-weight:600;color:#f87171;margin-bottom:3px">⚠️ reactive 的三大限制</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);line-height:2">
+          ① <strong>不能整体替换：</strong><code>form = newObj</code> 丢失响应式<br>
+          ② <strong>不能解构：</strong><code>const {name} = form</code> 丢失响应式<br>
+          ③ <strong>只能放对象/数组：</strong><code>reactive(5)</code> 报错
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-b" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:.85rem">你项目中的 reactive 用法</div>
+        <pre style="font-size:.7rem"><span class="cm">// ① 登录表单（Login.vue）</span>
+<span class="kw">const</span> loginForm = <span class="fn">reactive</span>({
+  username: <span class="str">''</span>,
+  password: <span class="str">''</span>
+})
+
+<span class="cm">// ② 表单验证规则（Login.vue）</span>
+<span class="kw">const</span> rules = <span class="fn">reactive</span>&lt;FormRules&gt;({
+  username: [{ required: <span class="kw">true</span>, message: <span class="str">'...'</span> }],
+  password: [{ required: <span class="kw">true</span>, min: <span class="num">6</span> }]
+})
+
+<span class="cm">// ③ 分页配置（Page4.vue）</span>
+<span class="kw">const</span> pagination = <span class="fn">reactive</span>({
+  currentPage: <span class="num">1</span>,
+  pageSize: <span class="num">50</span>,
+  total: <span class="num">0</span>
+})
+pagination.currentPage = <span class="num">2</span>   <span class="cm">// 直接改</span>
+
+<span class="cm">// ④ 搜索条件（Page4.vue）</span>
+<span class="kw">const</span> searchForm = <span class="fn">reactive</span>&lt;SearchParams&gt;({
+  companyId: <span class="str">''</span>, deptId: <span class="str">''</span>,
+  startDate: <span class="str">''</span>, endDate: <span class="str">''</span>
+})</pre>
+      </div>
+      <div class="cc cc-o" style="padding:10px 14px">
+        <div style="font-size:.76rem;font-weight:600;color:#fb923c;margin-bottom:3px">💡 reactive vs ref 选择规则</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.8">
+          <strong>一组关联的配置/表单字段</strong> → reactive<br>
+          <strong>单个值/需要整体替换</strong> → ref<br>
+          <strong>追求写法简洁（不写 .value）</strong> → reactive
+        </div>
+      </div>
+      <div class="cc cc-b" style="padding:10px 14px;margin-top:8px">
+        <div style="font-size:.76rem;font-weight:600;color:#60a5fa;margin-bottom:3px">💡 判断口诀 + 注意事项</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
+          <strong>✅ 用 reactive：</strong>表单、验证、分页、配置（写法干净）<br>
+          <strong>❌ 不推荐 reactive：</strong>API 返回数据、单个基本值、频繁解构<br>
+          <strong>⚠️ 限制：</strong>不能整体替换、不能解构、只能对象/数组
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 新增: computed 详解 ===== -->
+<div class="slide" id="s10e" style="background:linear-gradient(135deg,#0a1628,#0f172a)">
+  <h2>🧮 computed 计算属性详解 — 自动缓存 + 依赖追踪</h2>
+  <div class="c2">
+    <div>
+      <div class="cc cc-o" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#fb923c;margin-bottom:4px;font-size:.85rem">基础用法</div>
+        <pre style="font-size:.72rem"><span class="kw">import</span> { ref, computed } <span class="kw">from</span> <span class="str">'vue'</span>
+
+<span class="kw">const</span> firstName = <span class="fn">ref</span>(<span class="str">'张'</span>)
+<span class="kw">const</span> lastName = <span class="fn">ref</span>(<span class="str">'三'</span>)
+
+<span class="kw">const</span> fullName = <span class="fn">computed</span>(() => {
+  <span class="kw">return</span> firstName.<span class="kw">value</span> + lastName.<span class="kw">value</span>
+})
+<span class="cm">// 模板里直接用 {{ fullName }} 显示"张三"
+
+// ===== 访问 3 次 = 只算 1 次 =====
+// ① fullName → 执行函数（打印"计算了！"）
+// ② fullName → 命中缓存（不打印）
+// ③ fullName → 命中缓存（不打印）
+
+// ===== 只有依赖变了才重算 =====
+firstName.value = '李'  // 触发重算 → "李三"
+lastName.value = '四'   // 触发重算 → "李四"</span></pre>
+      </div>
+      <div class="cc cc-r" style="padding:12px 16px">
+        <div style="font-size:.78rem;font-weight:600;color:#f87171;margin-bottom:3px">computed vs 普通函数</div>
+        <table style="font-size:.71rem">
+          <tr><th></th><th>computed</th><th>普通函数</th></tr>
+          <tr><td>缓存</td><td style="color:#34d399">✅ 有</td><td style="color:#f87171">❌ 无</td></tr>
+          <tr><td>重算时机</td><td style="color:#34d399">依赖变了才重算</td><td style="color:#f87171">每次调用都算</td></tr>
+          <tr><td>模板中</td><td style="color:#34d399">{{ fullName }}</td><td style="color:#f87171">{{ getFullName() }}</td></tr>
+          <tr><td>适合</td><td style="color:#34d399">过滤/排序/拼接</td><td style="color:#f87171">传参场景</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">你项目中的真实例子</div>
+        <pre style="font-size:.7rem"><span class="cm">// ① 审批流只读判断（ComponentsCreate.vue）</span>
+<span class="kw">const</span> isReadOnly = <span class="fn">computed</span>(() =>
+  !(maStatus === <span class="str">'00'</span> || maStatus === <span class="str">'01'</span>)
+)
+<span class="cm">// maStatus 00→02 的瞬间，所有输入框自动禁用</span>
+
+<span class="cm">// ② 上传文件动态请求头（ComponentsCreate.vue）</span>
+<span class="kw">const</span> uploadHeaders = <span class="fn">computed</span>(() => ({
+  Authorization: authStore.authHeader
+}))
+<span class="cm">// Token 刷新后自动更新，不用手动改</span>
+
+<span class="cm">// ③ 路由判断是否认证页面（App.vue）</span>
+<span class="kw">const</span> isAuthPage = <span class="fn">computed</span>(() =>
+  !(route.path === <span class="str">'/login'</span> ||
+    route.path === <span class="str">'/register'</span>)
+)</pre>
+      </div>
+      <div class="cc cc-b" style="padding:12px 16px">
+        <div style="font-size:.78rem;font-weight:600;color:#60a5fa;margin-bottom:3px">⭐ 链条自动传导</div>
+        <pre style="font-size:.7rem"><span class="cm">// 一个真实的订单统计场景</span>
+<span class="kw">const</span> orders = <span class="fn">ref</span>([...]); <span class="cm">// 原始订单列表</span>
+
+<span class="cm">// ① 先从全部订单过滤出已完成的</span>
+<span class="kw">const</span> completed = <span class="fn">computed</span>(() =>
+  orders.<span class="kw">value</span>.<span class="fn">filter</span>(o => o.status === <span class="str">'03'</span>)
+)
+<span class="cm">// ② 再算已完成的总金额</span>
+<span class="kw">const</span> total = <span class="fn">computed</span>(() =>
+  completed.<span class="kw">value</span>.<span class="fn">reduce</span>((s,o) => s+o.price,<span class="num">0</span>)
+)
+
+<span class="cm">// orders 变了 → completed 自动算 → total 自动算
+//   中间任何一个无需手动触发，链条自动传导</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 新增: computed 使用场景 ===== -->
+<div class="slide" id="s10f" style="background:linear-gradient(135deg,#0f172a,#1a0533)">
+  <h2>🧮 computed 使用场景 — 什么时候该用？什么时候不该用？</h2>
+  <div class="c2">
+    <div>
+      <table style="font-size:.74rem;margin-bottom:10px">
+        <tr><th style="color:#34d399;width:40%">✅ 该用 computed</th><th style="color:#34d399">例子</th></tr>
+        <tr><td>拼接/格式化已有数据</td><td><code>fullName = 姓 + 名</code></td></tr>
+        <tr><td>过滤大数组</td><td>从全部订单中筛已完成</td></tr>
+        <tr><td>排序</td><td>按金额从大到小排列</td></tr>
+        <tr><td>映射转换</td><td>取数组里只需要的几个字段</td></tr>
+        <tr><td>布尔状态判断</td><td><code>isReadOnly / isAdmin / isLogin</code></td></tr>
+        <tr><td>统计合计</td><td>总金额、总数量、平均值</td></tr>
+        <tr><td>状态→颜色映射</td><td>maStatus 00→danger, 03→success</td></tr>
+        <tr><td>动态请求头/配置</td><td>根据 Token 生成 uploadHeaders</td></tr>
+        <tr><td>多条件组合判断</td><td>表单是否可提交（非空+未提交中）</td></tr>
+      </table>
+      <div class="cc cc-r" style="padding:10px 14px">
+        <div style="font-size:.76rem;font-weight:600;color:#f87171;margin-bottom:3px">❌ 不该用 computed</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.9">
+          <div>· <strong>有副作用</strong>（发请求、写 localStorage）→ 用 <code>watch</code></div>
+          <div>· <strong>需要传参</strong>（computed 不接受参数）→ 用普通函数</div>
+          <div>· <strong>纯常量</strong>（永远不会变）→ 直接定义 <code>const</code></div>
+          <div>· <strong>异步操作</strong>（computed 不能 async）→ 用 ref + watch</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.85rem">实战：状态标签自动变色</div>
+        <pre style="font-size:.71rem"><span class="cm">// maStatus → tag 颜色映射</span>
+<span class="kw">const</span> statusColor = <span class="fn">computed</span>(() => {
+  <span class="kw">const</span> map: Record&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt; = {
+    <span class="str">'00'</span>: <span class="str">'danger'</span>,   <span class="cm">// 退回 → 红</span>
+    <span class="str">'01'</span>: <span class="str">'info'</span>,     <span class="cm">// 编制 → 灰</span>
+    <span class="str">'02'</span>: <span class="str">'warning'</span>,  <span class="cm">// 审批中 → 橙</span>
+    <span class="str">'03'</span>: <span class="str">'success'</span>,  <span class="cm">// 完成 → 绿</span>
+    <span class="str">'04'</span>: <span class="str">'primary'</span>,  <span class="cm">// 设计出图 → 蓝</span>
+  }
+  <span class="kw">return</span> map[order.maStatus] || <span class="str">'info'</span>
+})
+
+<span class="cm">// 模板中直接用，status 一改颜色自动换</span>
+<span class="cm">// &lt;el-tag :type="statusColor"&gt;...&lt;/el-tag&gt;</span></pre>
+      </div>
+      <div class="cc cc-o" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#fb923c;margin-bottom:4px;font-size:.85rem">实战：表单提交按钮的可用性</div>
+        <pre style="font-size:.71rem"><span class="cm">// 同时检查多个条件</span>
+<span class="kw">const</span> canSubmit = <span class="fn">computed</span>(() =>
+  form.name !== <span class="str">''</span>          <span class="cm">// 名称不为空</span>
+  && form.deptId !== <span class="str">''</span>      <span class="cm">// 部门已选</span>
+  && materials.<span class="kw">value</span>.<span class="kw">length</span> > <span class="num">0</span> <span class="cm">// 至少一个材料</span>
+  && !submitting.<span class="kw">value</span>        <span class="cm">// 没有正在提交中</span>
+)
+
+<span class="cm">// 模板中一行搞定</span>
+<span class="cm">// &lt;el-button :disabled="!canSubmit"&gt;提交&lt;/el-button&gt;</span>
+
+<span class="cm">// ⭐ 任何条件变化，canSubmit 自动更新
+//   不需要在每个 input 的 @change 里手动判断</span></pre>
+      </div>
+      <div class="cc cc-o" style="padding:12px 16px;margin-top:8px;margin-bottom:8px">
+        <div style="font-size:.78rem;font-weight:600;color:#fb923c;margin-bottom:3px">💡 判断口诀 — 该用 / 不该用</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
+          <strong>✅ 该用：</strong>拼接/过滤/排序/映射/布尔判断/统计合计/颜色映射/动态配置<br>
+          <strong>❌ 不该用：</strong>副作用（发请求/write localStorage）→ 用 watch<br>
+          需传参 → 用普通函数；异步操作 → 用 ref + watch
+        </div>
+      </div>
+      <div class="cc cc-b" style="padding:12px 16px">
+        <div style="font-size:.76rem;font-weight:600;color:#60a5fa;margin-bottom:3px">💡 核心原则</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
+          <strong>从现有数据能算出来的</strong> → computed<br>
+          <strong>算的过程很昂贵或多次引用</strong> → computed（缓存省性能）<br>
+          <strong>需要改数据/发请求的</strong> → 不是 computed 的活
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 11 — Vue 3 核心：SFC ===== -->
+<div class="slide" id="s11" style="background:linear-gradient(135deg,#071a2e,#0f1a2e)">
+  <h2>📄 SFC 单文件组件 — .vue 文件 = 模板 + 逻辑 + 样式</h2>
+  <div class="c3">
+    <div class="cc cc-b">
+      <div style="font-size:.85rem;font-weight:700;color:#60a5fa;margin-bottom:4px"><code>&lt;template&gt;</code> 模板</div>
+      <pre style="font-size:.71rem;min-height:180px"><span class="cm">&lt;!-- 声明式 HTML --&gt;</span>
+&lt;<span class="kw">template</span>&gt;
+  &lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"page"</span>&gt;
+    <span class="cm">&lt;!-- 条件渲染 --&gt;</span>
+    &lt;<span class="fn">div</span> <span class="kw">v-if</span>=<span class="str">"loading"</span>&gt;加载中&lt;/<span class="fn">div</span>&gt;
+
+    <span class="cm">&lt;!-- 数据绑定 --&gt;</span>
+    &lt;<span class="fn">input</span> <span class="kw">v-model</span>=<span class="str">"name"</span>/&gt;
+
+    <span class="cm">&lt;!-- 列表 --&gt;</span>
+    &lt;<span class="fn">div</span> <span class="kw">v-for</span>=<span class="str">"i in list"</span> <span class="str">:key</span>=<span class="str">"i.id"</span>&gt;
+      {{ i.name }}
+    &lt;/<span class="fn">div</span>&gt;
+
+    <span class="cm">&lt;!-- 事件 --&gt;</span>
+    &lt;<span class="fn">button</span> <span class="str">@click</span>=<span class="str">"submit"</span>&gt;确定&lt;/<span class="fn">button</span>&gt;
+  &lt;/<span class="fn">div</span>&gt;
+&lt;/<span class="kw">template</span>&gt;</pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-size:.85rem;font-weight:700;color:#34d399;margin-bottom:4px"><code>&lt;script setup&gt;</code> 逻辑</div>
+      <pre style="font-size:.71rem;min-height:180px"><span class="cm">// 组合式 API，全部 JS 逻辑</span>
+&lt;<span class="kw">script setup lang</span>=<span class="str">"ts"</span>&gt;
+<span class="kw">import</span> { ref, reactive, computed,
+         watch, onMounted }
+  <span class="kw">from</span> <span class="str">'vue'</span>;
+
+<span class="cm">// 响应式数据</span>
+<span class="kw">const</span> loading = <span class="fn">ref</span>(<span class="kw">false</span>);
+<span class="kw">const</span> name = <span class="fn">ref</span>(<span class="str">''</span>);
+<span class="kw">const</span> list = <span class="fn">ref</span>([]);
+
+<span class="cm">// 方法</span>
+<span class="kw">async function</span> <span class="fn">submit</span>() {
+  loading.<span class="kw">value</span> = <span class="kw">true</span>;
+  <span class="kw">await</span> <span class="fn">api.save</span>({ name });
+  loading.<span class="kw">value</span> = <span class="kw">false</span>;
+}
+
+<span class="fn">onMounted</span>(() => <span class="fn">fetchData</span>());
+<span class="cm">// 不需要 export default / return！
+// 顶层变量 template 全都能用</span>
+&lt;/<span class="kw">script</span>&gt;</pre>
+    </div>
+    <div class="cc cc-p">
+      <div style="font-size:.85rem;font-weight:700;color:#a78bfa;margin-bottom:4px"><code>&lt;style scoped&gt;</code> 样式</div>
+      <pre style="font-size:.71rem;min-height:180px"><span class="cm">// scoped：样式仅作用于当前组件！</span>
+&lt;<span class="kw">style scoped lang</span>=<span class="str">"scss"</span>&gt;
+<span class="cls">.page</span> {
+  <span class="kw">padding</span>: <span class="num">20</span><span class="kw">px</span>;
+}
+<span class="cls">.card</span> {
+  <span class="kw">border-radius</span>: <span class="num">12</span><span class="kw">px</span>;
+  <span class="kw">box-shadow</span>: <span class="num">0</span> <span class="num">2</span><span class="kw">px</span> <span class="num">12</span><span class="kw">px</span>
+    <span class="fn">rgba</span>(<span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>,<span class="num">0.08</span>);
+}
+&lt;/<span class="kw">style</span>&gt;</pre>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.5);margin-top:8px;line-height:1.6">
+        <strong>scoped 原理：</strong>自动添加 <code>data-v-xxxxx</code><br>
+        每个组件属性不同 → 样式隔离<br>
+        不同 .vue 文件同名类也不冲突！
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 12 — Vue Router 介绍 ===== -->
+<div class="slide" id="s12" style="background:linear-gradient(135deg,#0a1628,#1a1a2e)">
+  <h2>🛣️ Vue Router — 前端路由，解决什么问题？</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.88rem">MiniUI 旧版：页面跳转 = 全量刷新</div>
+      <pre style="font-size:.73rem"><span class="cm">// 每次跳转都：</span>
+<span class="cm">// ① 浏览器发 HTTP 请求到后端</span>
+<span class="cm">// ② 后端返回完整 HTML 页面</span>
+<span class="cm">// ③ 浏览器重新解析、渲染整个页面</span>
+<span class="cm">// ④ 所有 JS 重新初始化</span>
+<span class="cm">// ⑤ 之前页面的状态全部丢失</span>
+
+<span class="kw">window</span>.location.href = <span class="str">'/page2.html'</span>;
+
+<span class="cm">// 如果 page2 需要参数：
+//   只能拼在 URL 上或存到 Session</span>
+<span class="kw">window</span>.location.href =
+  <span class="str">'/page2.html?id=123'</span>;
+
+<span class="cm">// ⚠️ 缺点：
+//   · 白屏 1-2 秒（下载 HTML+CSS+JS+图片）
+//   · 之前页面状态全丢（表单填了一半没了）
+//   · 流量浪费（每次都下载完整页面）
+//   · 不能做页面过渡动画</span></pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.88rem">Vue Router：页面切换 = 无刷新 SPA</div>
+      <pre style="font-size:.73rem"><span class="cm">// SPA：整个应用只有一个 HTML 页面
+// 切换"页面"时，只替换内容区组件</span>
+
+<span class="kw">const</span> router = <span class="fn">createRouter</span>({
+  history: <span class="fn">createWebHistory</span>(),
+  routes: [
+    { path: <span class="str">'/login'</span>,
+      component: () =>
+        <span class="kw">import</span>(<span class="str">'@/views/Login.vue'</span>) },
+    { path: <span class="str">'/page4'</span>,
+      component: () =>
+        <span class="kw">import</span>(<span class="str">'@/views/Page4.vue'</span>) },
+  ]
+});
+
+<span class="cm">// 跳转方式</span>
+router.<span class="fn">push</span>(<span class="str">'/page4'</span>);            <span class="cm">// URL 变了，但页面不刷新</span>
+router.<span class="fn">push</span>({ name: <span class="str">'Page4'</span>,
+                params: { id: <span class="num">123</span> }}); <span class="cm">// 传参</span>
+
+<span class="cm">// ⭐ 优势：
+//   · 毫秒级切换（只换组件，不发 HTTP）
+//   · 之前页面状态保持（表单还在）
+//   · 懒加载（按需下载组件）
+//   · 可做过渡动画</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 13 — Vue Router 路由配置 ===== -->
+<div class="slide" id="s13" style="background:linear-gradient(135deg,#0f1a2e,#0d1f36)">
+  <h2>🛣️ Vue Router — 路由配置与懒加载</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:8px;font-size:.88rem">完整路由配置（router/index.ts）</div>
+      <pre style="font-size:.72rem"><span class="kw">const</span> router = <span class="fn">createRouter</span>({
+  <span class="cm">// HTML5 History 模式（URL 干净无 #）</span>
+  history: <span class="fn">createWebHistory</span>(),
+  routes: [
+    {
+      path: <span class="str">'/'</span>,
+      name: <span class="str">'Home'</span>,
+      <span class="cm">// ⭐ 路由懒加载：访问时才下载</span>
+      component: () =>
+        <span class="kw">import</span>(<span class="str">'../views/Home.vue'</span>),
+      meta: {
+        requiresAuth: <span class="kw">true</span>,
+        title: <span class="str">'首页'</span>
+      }
+    },
+    {
+      path: <span class="str">'/page4'</span>,
+      name: <span class="str">'Page4'</span>,
+      component: () =>
+        <span class="kw">import</span>(<span class="str">'../views/Page4.vue'</span>),
+      meta: {
+        requiresAuth: <span class="kw">true</span>,
+        pagePermission: <span class="str">'page4'</span>,
+        title: <span class="str">'工装申请管理'</span>
+      }
+    },
+    <span class="cm">// 404 兜底</span>
+    { path: <span class="str">'/:pathMatch(.*)*'</span>,
+      redirect: <span class="str">'/'</span> }
+  ]
+});</pre>
+    </div>
+    <div>
+      <table style="margin-bottom:10px;font-size:.73rem">
+        <tr><th style="color:#60a5fa">配置项</th><th style="color:#60a5fa">作用</th><th style="color:#60a5fa">示例</th></tr>
+        <tr><td><code>path</code></td><td>URL 路径</td><td>'/login'</td></tr>
+        <tr><td><code>name</code></td><td>路由名称（用于跳转）</td><td>'Login'</td></tr>
+        <tr><td><code>component</code></td><td>对应的页面组件</td><td>懒加载 import()</td></tr>
+        <tr><td><code>meta.requiresAuth</code></td><td>是否需要登录</td><td>true / false</td></tr>
+        <tr><td><code>meta.pagePermission</code></td><td>需要的页面权限</td><td>'page4'</td></tr>
+        <tr><td><code>meta.requiresAdmin</code></td><td>是否需要管理员</td><td>true（可选）</td></tr>
+        <tr><td><code>meta.title</code></td><td>页面标题（自动设置）</td><td>'工装申请管理'</td></tr>
+      </table>
+      <div class="cc cc-g" style="padding:12px 16px">
+        <div style="font-size:.8rem;font-weight:600;color:#34d399;margin-bottom:3px">⭐ 懒加载的价值</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.7);line-height:1.7">
+          <code>() =&gt; import(...)</code> 让 Vite 把每个页面打包成独立的 .js 文件<br>
+          用户访问 /page4 时才下载 page4 的代码<br>
+          首页只加载必需的代码，大幅减少首屏加载时间
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 14 — 路由守卫 ===== -->
+<div class="slide" id="s14" style="background:linear-gradient(135deg,#1a0533,#0a1628)">
+  <h2>🛡️ Vue Router — 路由守卫：前端三级权限控制</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.88rem">MiniUI 旧版：怎么控制权限？</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.72);line-height:2">
+        <div>🔴 登录检查：每个页面开头写一段 JS 检查 Session</div>
+        <div>🔴 权限检查：每个页面对照着权限表手动判断</div>
+        <div>🔴 菜单显示：后端渲染模板时决定显隐</div>
+        <div>🔴 <strong>容易遗漏：忘记在某个页面加检查 = 安全漏洞</strong></div>
+      </div>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.88rem">Vue Router：全局守卫，一处检查</div>
+      <pre style="font-size:.71rem"><span class="cm">// beforeEach：所有路由跳转前统一拦截</span>
+router.<span class="fn">beforeEach</span>((to, from, next) => {
+
+  <span class="cm">// ① 已登录 → 访问登录页 → 直接跳首页</span>
+  <span class="kw">if</span> (to.path === <span class="str">'/login'</span> && <span class="fn">isAuth</span>()) {
+    <span class="fn">next</span>(<span class="str">'/'</span>); <span class="kw">return</span>;
+  }
+
+  <span class="cm">// ② 未登录 → 访问需认证页 → 跳登录</span>
+  <span class="kw">if</span> (to.meta.requiresAuth && !<span class="fn">isAuth</span>()) {
+    <span class="fn">next</span>({ path: <span class="str">'/login'</span>,
+              query: { redirect: to.fullPath }});
+    <span class="kw">return</span>;
+  }
+
+  <span class="cm">// ③ 非管理员 → 访问管理员页 → 跳首页</span>
+  <span class="kw">if</span> (to.meta.requiresAdmin && !<span class="fn">isAdmin</span>()) {
+    <span class="fn">next</span>(<span class="str">'/'</span>); <span class="kw">return</span>;
+  }
+
+  <span class="cm">// ④ 无页面权限 → 跳首页</span>
+  <span class="kw">const</span> perm = to.meta.pagePermission;
+  <span class="kw">if</span> (perm && !<span class="fn">hasPerm</span>(perm)) {
+    <span class="fn">next</span>(<span class="str">'/'</span>); <span class="kw">return</span>;
+  }
+
+  <span class="fn">next</span>(); <span class="cm">// ✅ 放行</span>
+});
+
+<span class="cm">// afterEach：自动设置页面标题</span>
+router.<span class="fn">afterEach</span>(to => {
+  document.<span class="kw">title</span> = to.meta.title; });</pre>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:.82rem;color:rgba(255,255,255,.55)">
+    ⭐ 登录/角色/页面权限 <strong>三级连查</strong>，<strong>一处不漏</strong>。新增页面只需配置 meta，守卫自动生效。
+  </div>
+</div>
+
+<!-- ===== 15 — Pinia 介绍 ===== -->
+<div class="slide" id="s15" style="background:linear-gradient(135deg,#0f172a,#1a0a2e)">
+  <h2>🍍 Pinia — 状态管理，解决什么问题？</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.88rem">MiniUI 旧版：状态散落在各处</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.72);line-height:2.2">
+        <div>🔴 用户信息 → <strong>Session</strong>（后端存，前后端共享）</div>
+        <div>🔴 登录状态 → <strong>Cookie</strong>（每次请求自动带）</div>
+        <div>🔴 页面间传参 → <strong>URL 参数</strong>（?id=123）</div>
+        <div>🔴 临时数据 → <strong>隐藏 input / DOM 属性</strong></div>
+        <div>🔴 全局配置 → <strong>全局 JS 变量</strong>（刷新就丢）</div>
+        <div>🔴 <strong>没有统一的状态管理中心</strong></div>
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.88rem">Pinia：集中式状态仓库</div>
+        <pre style="font-size:.71rem"><span class="cm">// stores/auth.ts — 所有认证相关状态</span>
+<span class="kw">export const</span> useAuthStore =
+  <span class="fn">defineStore</span>(<span class="str">'auth'</span>, () => {
+
+  <span class="cm">// ===== 状态 =====</span>
+  <span class="kw">const</span> token = <span class="fn">ref</span>(<span class="fn">getToken</span>());
+  <span class="kw">const</span> isLoggedIn = <span class="fn">ref</span>(<span class="fn">isAuthenticated</span>());
+  <span class="kw">const</span> isAdminUser = <span class="fn">ref</span>(<span class="fn">checkIsAdmin</span>());
+  <span class="kw">const</span> pagePerms = <span class="fn">ref</span>(<span class="fn">getStoredPerms</span>());
+
+  <span class="cm">// ===== 计算 =====</span>
+  <span class="kw">const</span> authHeader = <span class="fn">computed</span>(() =>
+    token.value
+      ? <span class="str">`Bearer ${token.value}`</span> : <span class="kw">null</span>);
+
+  <span class="cm">// ===== 方法 =====</span>
+  <span class="kw">function</span> <span class="fn">hasPerm</span>(key: <span class="kw">string</span>) {
+    <span class="kw">return</span> isAdminUser.<span class="kw">value</span> ||
+      pagePerms.<span class="kw">value</span>.<span class="fn">includes</span>(key);
+  }
+
+  <span class="kw">async function</span> <span class="fn">login</span>(params) { ... }
+  <span class="kw">async function</span> <span class="fn">logout</span>() { ... }
+
+  <span class="kw">return</span> { token, isLoggedIn, isAdminUser,
+           authHeader, hasPerm, login, logout };
+});</pre>
+      </div>
+      <div style="font-size:.74rem;color:rgba(255,255,255,.6);line-height:1.8">
+        <strong style="color:#34d399">任何组件都能直接用：</strong><br>
+        组件 A（App.vue）：<code>auth.hasPerm('page4')</code> 控制菜单<br>
+        组件 B（Login.vue）：<code>auth.login(...)</code> 登录<br>
+        组件 C（request.ts）：<code>authStore.token</code> 获取 Token<br>
+        <strong>三处访问的是同一份数据，一处改全局变。</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 16 — Pinia 进阶 ===== -->
+<div class="slide" id="s16" style="background:linear-gradient(135deg,#0a1628,#0f1a2e)">
+  <h2>🍍 Pinia 进阶：非组件中使用 + 双重存储</h2>
+  <div class="c2">
+    <div class="cc cc-o">
+      <div style="font-weight:700;color:#fb923c;margin-bottom:6px;font-size:.85rem">在 .ts 文件中使用（非 .vue 组件）</div>
+      <pre style="font-size:.72rem"><span class="cm">// 问题：useAuthStore() 只能在组件</span>
+<span class="cm">// setup() 中调用，request.ts 不是组件</span>
+<span class="cm">// 需要 token 来判断 401 时怎么办？</span>
+
+<span class="cm">// ===== 解决方案 =====</span>
+<span class="cm">// stores/index.ts：导出 pinia 实例</span>
+<span class="kw">export const</span> pinia = <span class="fn">createPinia</span>();
+
+<span class="cm">// request.ts：传入实例获取 store</span>
+<span class="kw">import</span> { pinia } <span class="kw">from</span> <span class="str">'@/stores'</span>;
+<span class="kw">import</span> { useAuthStore }
+  <span class="kw">from</span> <span class="str">'@/stores/auth'</span>;
+
+<span class="kw">const</span> authStore =
+  <span class="fn">useAuthStore</span>(pinia);
+
+<span class="cm">// 现在可以在拦截器中使用了！</span>
+<span class="kw">const</span> token = authStore.token;
+authStore.<span class="fn">refreshToken</span>(newToken);</pre>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">双重存储策略</div>
+        <pre style="font-size:.72rem"><span class="cm">// Pinia 状态在内存中，刷新页面就消失
+// 所以需要 localStorage 做持久化</span>
+
+<span class="kw">async function</span> <span class="fn">login</span>(params) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">loginApi</span>(params);
+
+  <span class="cm">// ① 写 Pinia（内存 → 响应式）</span>
+  token.<span class="kw">value</span> = res.data.token;
+  isLoggedIn.<span class="kw">value</span> = <span class="kw">true</span>;
+
+  <span class="cm">// ② 写 localStorage（磁盘 → 持久化）</span>
+  localStorage.<span class="fn">setItem</span>(<span class="str">'token'</span>,
+    res.data.token);
+  localStorage.<span class="fn">setItem</span>(<span class="str">'user'</span>,
+    <span class="fn">JSON.stringify</span>(res.data.user));
+};</pre>
+      </div>
+      <div style="padding:10px 14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:10px">
+        <div style="font-size:.78rem;font-weight:600;color:#34d399;margin-bottom:3px">💡 数据流</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.7);line-height:1.8">
+          API 返回 → localStorage.setItem() → ref.value 赋值 → computed 自动更新 → 所有组件重新渲染
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 17 — Axios 封装 ===== -->
+<div class="slide" id="s17" style="background:linear-gradient(135deg,#071a2e,#0d1f36)">
+  <h2>📡 Axios 封装 — 统一请求管理，替代 $.ajax</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">请求拦截器：自动注入 Token</div>
+      <pre style="font-size:.72rem"><span class="cm">// src/api/request.ts</span>
+<span class="kw">const</span> service = axios.<span class="fn">create</span>({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: <span class="num">15000</span>,      <span class="cm">// 15秒超时</span>
+});
+
+<span class="cm">// 请求拦截器：每次请求前自动执行</span>
+service.interceptors.request.<span class="fn">use</span>(config => {
+  <span class="kw">const</span> token = <span class="fn">getToken</span>();
+  <span class="kw">if</span> (token) {
+    <span class="cm">// 自动加 Authorization 请求头</span>
+    config.headers.<span class="fn">set</span>(
+      <span class="str">'Authorization'</span>,
+      <span class="str">`Bearer ${token}`</span>
+    );
+  }
+  <span class="kw">return</span> config;
+});
+
+<span class="cm">// 封装好的方法（带 TypeScript 泛型）</span>
+<span class="kw">export function</span> <span class="fn">get</span>&lt;T&gt;(url, params?) { ... }
+<span class="kw">export function</span> <span class="fn">post</span>&lt;T&gt;(url, data?) { ... }
+<span class="kw">export function</span> <span class="fn">put</span>&lt;T&gt;(url, data?) { ... }
+<span class="kw">export function</span> <span class="fn">del</span>&lt;T&gt;(url) { ... }</pre>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">响应拦截器：Token 自动刷新</div>
+        <pre style="font-size:.72rem"><span class="cm">// 与 MiniUI $.ajax 的关键区别：</span>
+<span class="cm">// 每次 $ajax 都要手动带 token</span>
+<span class="cm">// Axios 拦截器自动注入，一劳永逸</span>
+
+service.interceptors.response.<span class="fn">use</span>(
+  res => res.data,     <span class="cm">// 自动解包</span>
+  <span class="kw">async</span> error => {
+    <span class="kw">if</span> (error.response?.status === <span class="num">401</span>) {
+      <span class="cm">// Token 过期 → 自动刷新</span>
+      <span class="kw">const</span> newToken = <span class="kw">await</span> <span class="fn">refreshToken</span>();
+      <span class="kw">if</span> (newToken) {
+        <span class="cm">// 刷新成功 → 重试原请求</span>
+        <span class="kw">return</span> <span class="fn">service</span>(error.config);
+      }
+      <span class="cm">// 刷新失败 → 跳登录</span>
+      router.<span class="fn">push</span>(<span class="str">'/login'</span>);
+    }
+    <span class="kw">if</span> (error.response?.status === <span class="num">403</span>) {
+      <span class="cm">// 无权限</span>
+    }
+    <span class="kw">return</span> Promise.<span class="fn">reject</span>(error);
+  }
+);</pre>
+      </div>
+      <div style="font-size:.74rem;color:rgba(255,255,255,.6);line-height:1.8">
+        <strong style="color:#34d399">⭐ 对比 MiniUI 的 $.ajax：</strong><br>
+        每次 $.ajax 都要写完整的 success/error 回调<br>
+        Axios 拦截器一次配置，全局生效<br>
+        Token 注入、401 刷新、错误提示全部自动化
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 新增：export/import 第1页 ===== -->
+<div class="slide" id="s17a" style="background:linear-gradient(135deg,#0d1f36,#071a2e)">
+  <h2>📦 export / import — 模块系统：代码如何组织与复用</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">❌ 旧方式：MiniUI / 传统 HTML 的脚本加载</div>
+      <pre style="font-size:.72rem"><span class="cm">// page1.html — 全局变量污染，顺序敏感</span>
+&lt;script src="jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="miniui.js"&gt;&lt;/script&gt;
+&lt;script src="utils.js"&gt;&lt;/script&gt;
+&lt;script src="page1.js"&gt;&lt;/script&gt;
+
+<span class="cm">// utils.js — 直接挂在全局 window 上</span>
+<span class="kw">function</span> <span class="fn">formatDate</span>(d) { <span class="kw">return</span> ... }
+<span class="kw">function</span> <span class="fn">showMsg</span>(msg) { ... }
+
+<span class="cm">// page1.js — 直接调用，不知道从哪来的</span>
+<span class="kw">var</span> d = <span class="fn">formatDate</span>(<span class="kw">new</span> Date());
+<span class="cm">// ⚠️ 如果 utils.js 忘记引，这里直接报错</span>
+<span class="cm">// ⚠️ 如果别人也写了同名 formatDate，就冲突了</span></pre>
+      <div style="font-size:.73rem;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.7">
+        <span style="color:#f87171">痛点 1：</span>全局变量，同名函数会互相覆盖<br>
+        <span style="color:#f87171">痛点 2：</span>script 标签顺序必须手动管，错了就 undefined<br>
+        <span style="color:#f87171">痛点 3：</span>不知道某个函数是从哪个文件来的<br>
+        <span style="color:#f87171">痛点 4：</span>压缩打包困难，tree-shaking 不可能
+      </div>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">✅ 新方式：ES Module（export / import）</div>
+        <pre style="font-size:.72rem"><span class="cm">// utils/format.ts — 用 export 显式声明"可以给别人用"</span>
+<span class="kw">export function</span> <span class="fn">formatDate</span>(d: Date): <span class="kw">string</span> {
+  <span class="kw">return</span> d.toISOString().slice(<span class="num">0</span>,<span class="num">10</span>);
+}
+<span class="kw">export function</span> <span class="fn">formatDateTime</span>(d: Date): <span class="kw">string</span> { ... }
+
+<span class="cm">// 只暴露需要的部分，内部函数不 export = 私有</span>
+<span class="kw">function</span> <span class="fn">internalHelper</span>() { ... }  <span class="cm">// 外界访问不到</span>
+
+<span class="cm">// Page1.vue — 用 import 精确声明"我需要什么"</span>
+<span class="kw">import</span> { formatDate, formatDateTime }
+  <span class="kw">from</span> <span class="str">'@/utils/format'</span>;
+<span class="cm">// ↑ 编译器直接告诉你：这个文件是否存在、函数名是否拼对</span>
+
+<span class="kw">const</span> d = <span class="fn">formatDate</span>(<span class="kw">new</span> Date());  <span class="cm">// 明确来源</span></pre>
+      </div>
+      <div style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:8px;padding:10px;font-size:.75rem;color:rgba(255,255,255,.75);line-height:1.7">
+        <strong style="color:#34d399">✅ 解决了什么：</strong><br>
+        ① <strong>作用域隔离</strong> — 不 export 的东西外界访问不到，不会冲突<br>
+        ② <strong>显式依赖</strong> — import 写明了"我依赖谁"，一目了然<br>
+        ③ <strong>静态分析</strong> — TS 编译器能检查：文件是否存在、函数名是否拼对、参数类型是否匹配<br>
+        ④ <strong>tree-shaking</strong> — 打包时只保留用到的代码，没用到的自动剔除
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 新增：export/import 第2页 ===== -->
+<div class="slide" id="s17b" style="background:linear-gradient(135deg,#0a1628,#0d1f36)">
+  <h2>📦 export / import — 两种导出 + 项目真实用法</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">两种导出方式（必须搞清楚！）</div>
+      <pre style="font-size:.72rem"><span class="cm">// ① Named Export（命名导出）— 一个文件可以导多个</span>
+<span class="cm">// 方式 A：声明时直接 export</span>
+<span class="kw">export function</span> <span class="fn">getToken</span>() { ... }
+<span class="kw">export function</span> <span class="fn">getUser</span>() { ... }
+<span class="kw">export const</span> API_URL = <span class="str">'http://...'</span>;
+
+<span class="cm">// 方式 B：先声明，最后统一 export</span>
+<span class="kw">function</span> <span class="fn">fn1</span>() { ... }
+<span class="kw">function</span> <span class="fn">fn2</span>() { ... }
+<span class="kw">export</span> { fn1, fn2 };  <span class="cm">// 导出的名字 = 函数名</span>
+<span class="cm">// export { fn1 as apiFn1, fn2 }  // 可以改名</span>
+
+<span class="cm">// 导入时必须用同名（可以用 as 改名）</span>
+<span class="kw">import</span> { getToken, getUser }
+  <span class="kw">from</span> <span class="str">'@/utils/auth'</span>;
+<span class="cm">// import { getToken as gt }  // 改名</span>
+
+<span class="cm">// ② Default Export（默认导出）— 一个文件只能有一个</span>
+<span class="kw">export default</span> <span class="kw">function</span> <span class="fn">main</span>() { ... }
+<span class="cm">// 或者导出整个组件 / 配置对象</span>
+<span class="kw">export default</span> {
+  name: <span class="str">'MyComponent'</span>,
+  setup() { ... }
+};
+
+<span class="cm">// 导入时可以随便起名（不需要花括号）</span>
+<span class="kw">import</span> anything <span class="kw">from</span> <span class="str">'./main'</span>;
+<span class="cm">// ↑ anything 可以是任意名字，都能用</span></pre>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">本项目中的真实用法</div>
+        <pre style="font-size:.72rem"><span class="cm">// api/request.ts — 导出封装好的请求方法</span>
+<span class="kw">export function</span> <span class="fn">get</span>&lt;T&gt;(url, params?) {
+  <span class="kw">return</span> service.get(url, { params });
+}
+<span class="kw">export function</span> <span class="fn">post</span>&lt;T&gt;(url, data?) { ... }
+<span class="kw">export function</span> <span class="fn">put</span>&lt;T&gt;(url, data?) { ... }
+<span class="kw">export function</span> <span class="fn">del</span>&lt;T&gt;(url) { ... }
+<span class="cm">// ↑ 4个 named export，api 文件按需 import</span>
+
+<span class="cm">// api/auth.ts — 导入 request 里的方法</span>
+<span class="kw">import</span> { get, post, put, del }
+  <span class="kw">from</span> <span class="str">'@/api/request'</span>;
+<span class="kw">export function</span> <span class="fn">login</span>(data) {
+  <span class="kw">return</span> <span class="fn">post</span>&lt;ApiResp&lt;LoginResult&gt;&gt;(
+    <span class="str">'/login'</span>, data
+  );
+}
+
+<span class="cm">// stores/auth.ts — 导出 store 供全局使用</span>
+<span class="kw">export const</span> useAuthStore = <span class="fn">defineStore</span>(<span class="str">'auth'</span>, () => {
+  <span class="cm">// ...</span>
+});
+
+<span class="cm">// 任意 .vue 文件 — 导入 store</span>
+<span class="kw">import</span> { useAuthStore } <span class="kw">from</span> <span class="str">'@/stores/auth'</span>;
+<span class="kw">const</span> authStore = <span class="fn">useAuthStore</span>();</pre>
+      </div>
+      <div style="font-size:.73rem;color:rgba(255,255,255,.6);line-height:1.8">
+        <strong style="color:#a78bfa">💡 最佳实践（本项目遵循）：</strong><br>
+        • 工具函数、API 方法 → 用 <strong style="color:#60a5fa">named export</strong>（可以导多个）<br>
+        • Vue 组件、Pinia store → 用 <strong style="color:#60a5fa">named export</strong>（import 时名字统一）<br>
+        • 配置文件（vite.config.ts）→ 用 <strong style="color:#60a5fa">default export</strong>（只有一个主要导出）<br>
+        • 一个文件里 <strong style="color:#f87171">不要混用</strong> named 和 default，会增加理解成本
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 18 — Token 刷新队列 ===== -->
+<div class="slide" id="s18" style="background:linear-gradient(135deg,#0a1628,#1a0533)">
+  <h2>🔄 Token 刷新队列 — 并发请求不丢失</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">问题场景</div>
+      <pre style="font-size:.73rem"><span class="cm">// 用户打开一个页面，同时加载 3 个接口：
+// GET /api/components/list      ← 接口1
+// GET /api/components/options   ← 接口2
+// GET /api/user/me              ← 接口3
+
+<span class="cm">// 如果 Token 刚过期，3 个请求同时返回 401
+// 每个都去调刷新接口 → 浪费！且可能冲突</span>
+
+<span class="cm">// ===== MiniUI 时代的处理 =====</span>
+<span class="cm">// 每个 $.ajax 的 error 回调各自处理
+// 可能出现：A 刷新了 Token，B 和 C 不知道
+// 继续用旧 Token 重试 → 仍然 401</span></pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">Vue 3 的解决方案：请求队列</div>
+      <pre style="font-size:.73rem"><span class="cm">// 用一个 isRefreshing 标记 + 队列解决</span>
+<span class="kw">let</span> isRefreshing = <span class="kw">false</span>;
+<span class="kw">let</span> queue: ((token: <span class="kw">string</span>) =&gt; <span class="kw">void</span>)[] = [];
+
+<span class="kw">if</span> (status === <span class="num">401</span>) {
+  <span class="kw">if</span> (isRefreshing) {
+    <span class="cm">// 已有刷新在进行中 → 排队等待</span>
+    <span class="kw">return new</span> <span class="cls">Promise</span>(resolve => {
+      queue.<span class="fn">push</span>(token =>
+        <span class="fn">resolve</span>(<span class="fn">service</span>(request)));
+    });
+  }
+  isRefreshing = <span class="kw">true</span>;
+  <span class="kw">const</span> newToken = <span class="kw">await</span> <span class="fn">refreshToken</span>();
+  isRefreshing = <span class="kw">false</span>;
+  <span class="cm">// 通知所有排队的请求用新 Token 重试</span>
+  queue.<span class="fn">forEach</span>(fn => <span class="fn">fn</span>(newToken));
+  queue = [];
+  <span class="kw">return</span> <span class="fn">service</span>(originalRequest);
+}</pre>
+    </div>
+  </div>
+  <div style="margin-top:8px;font-size:.82rem;color:rgba(255,255,255,.5);text-align:center;max-width:800px">
+    这在不依赖后端 Session 的 <strong>JWT 无状态认证</strong>体系里是标准做法。MiniUI 时代用 Session 没有这个问题，但 Session 不适用于前后端分离。
+  </div>
+</div>
+
+<!-- ===== 19 — TypeScript ===== -->
+<div class="slide" id="s19" style="background:linear-gradient(135deg,#0f172a,#071a2e)">
+  <h2>📐 TypeScript — 为 JavaScript 加上类型安全</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.85rem">MiniUI 时代：纯 JS 的问题</div>
+      <pre style="font-size:.72rem"><span class="cm">// ===== 问题 1：拼写错误不报错 =====</span>
+<span class="kw">var</span> user = { name: <span class="str">'张三'</span> };
+console.<span class="fn">log</span>(user.nmae);    <span class="cm">// undefined，没提示</span>
+
+<span class="cm">// ===== 问题 2：不知道接口返回什么 =====</span>
+$.<span class="fn">ajax</span>({ url: <span class="str">'/api/user'</span>,
+  success: <span class="kw">function</span>(res) {
+    <span class="cm">// res 是什么？有哪些字段？</span>
+    <span class="cm">// 只能 console.log 打印出来看</span>
+    <span class="fn">console.log</span>(res.data);
+  }
+});
+
+<span class="cm">// ===== 问题 3：参数类型没有检查 =====</span>
+<span class="kw">function</span> <span class="fn">add</span>(a, b) {
+  <span class="kw">return</span> a + b;
+}
+<span class="fn">add</span>(<span class="str">'1'</span>, <span class="num">2</span>);  <span class="cm">// 返回 "12"，不是 3</span>
+
+<span class="cm">// ===== 问题 4：重构时不知道改了哪 =====
+// 改一个字段名，不知道影响多少地方</span></pre>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">Vue + TypeScript：编译时检查</div>
+      <pre style="font-size:.72rem"><span class="cm">// ===== 1. 接口定义 → 代码即文档 =====</span>
+<span class="kw">interface</span> <span class="cls">LoginParams</span> {
+  username: <span class="kw">string</span>;
+  password: <span class="kw">string</span>;
+}
+
+<span class="kw">interface</span> <span class="cls">ApiResponse</span>&lt;T&gt; {
+  code: <span class="kw">number</span>;
+  message: <span class="kw">string</span>;
+  data: T;
+}
+
+<span class="cm">// ===== 2. 泛型确保类型安全 =====</span>
+<span class="kw">export function</span> <span class="fn">login</span>(params: LoginParams):
+  Promise&lt;ApiResponse&lt;LoginResult&gt;&gt; {
+  <span class="kw">return</span> <span class="fn">post</span>&lt;LoginResult&gt;(<span class="str">'/auth/login'</span>);
+}
+
+<span class="cm">// ===== 3. IDE 自动补全 + 报错 =====</span>
+<span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">login</span>({ username, password });
+res.data.token;    <span class="cm">// ← IDE 自动补全</span>
+res.data.usenrame; <span class="cm">// ← 编译报错（拼写错误）</span></pre>
+      <div style="font-size:.74rem;color:rgba(255,255,255,.6);line-height:1.7;margin-top:6px">
+        <strong style="color:#34d399">TypeScript 的核心价值：</strong><br>
+        把运行时错误 → <strong>提前到编译时发现</strong><br>
+        拼写错误 / 类型不匹配 / 参数错误 → 写完就报
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 20 — Vite 构建工具 ===== -->
+<div class="slide" id="s20" style="background:linear-gradient(135deg,#1a0a2e,#0f172a)">
+  <h2>⚙️ Vite — 构建工具，替代 Webpack</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">核心配置（vite.config.ts）</div>
+      <pre style="font-size:.72rem"><span class="kw">export default</span> <span class="fn">defineConfig</span>(({ mode }) => {
+  <span class="kw">const</span> env = <span class="fn">loadEnv</span>(mode, <span class="str">'.'</span>);
+  <span class="kw">return</span> {
+    plugins: [<span class="fn">vue</span>()],
+    server: {
+      port: <span class="fn">Number</span>(env.VITE_PORT),
+      <span class="cm">// ⭐ 开发代理：/api → 后端</span>
+      proxy: {
+        <span class="str">'/api'</span>: {
+          target: <span class="str">'http://localhost:8081'</span>,
+          changeOrigin: <span class="kw">true</span>,
+        }
+      }
+    },
+    resolve: {
+      alias: { <span class="str">'@'</span>: <span class="str">'./src'</span> } <span class="cm">// 路径别名</span>
+    }
+  };
+});</pre>
+    </div>
+    <div>
+      <table style="font-size:.73rem;margin-bottom:10px">
+        <tr><th style="color:#34d399">Vite 优势</th><th style="color:#f87171">MiniUI 时代</th><th style="color:#34d399">Vite 时代</th></tr>
+        <tr><td>启动速度</td><td>无需构建</td><td style="color:#6ee7b7">秒级冷启动</td></tr>
+        <tr><td>热更新</td><td>手动刷新</td><td style="color:#6ee7b7">HMR 毫秒级</td></tr>
+        <tr><td>文件组织</td><td>全部丢在 static/</td><td style="color:#6ee7b7">模块化 import</td></tr>
+        <tr><td>环境切换</td><td>代码里写死</td><td style="color:#6ee7b7">.env 文件</td></tr>
+        <tr><td>代码分割</td><td>全量加载</td><td style="color:#6ee7b7">路由懒加载自动分包</td></tr>
+      </table>
+      <div class="cc cc-o" style="padding:12px 16px">
+        <div style="font-size:.8rem;font-weight:600;color:#fb923c;margin-bottom:3px">.env 环境变量</div>
+        <pre style="font-size:.7rem"><span class="cm">// .env.development — 开发环境</span>
+VITE_API_BASE_URL=/api     <span class="cm">// Vite Proxy 代理</span>
+
+<span class="cm">// .env.production — 生产环境</span>
+VITE_API_BASE_URL=/api     <span class="cm">// Nginx 反向代理</span>
+
+<span class="cm">// 代码中读取（必须以 VITE_ 开头）</span>
+<span class="kw">const</span> url = import.meta.env.VITE_API_BASE_URL;</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 21 — watch 与生命周期 ===== -->
+<div class="slide" id="s21" style="background:linear-gradient(135deg,#0f1a2e,#1a0533)">
+  <h2>👀 watch 监听 + 生命周期钩子</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">watch — 监听数据变化</div>
+      <pre style="font-size:.73rem"><span class="cm">// ① 监听单个 ref</span>
+<span class="fn">watch</span>(count, (newVal, oldVal) => {
+  console.<span class="fn">log</span>(<span class="str">`从 ${oldVal} → ${newVal}`</span>)
+});
+
+<span class="cm">// ② 监听 reactive 属性（用 getter 函数）</span>
+<span class="fn">watch</span>(
+  () => form.username,
+  (newName) => { ... }
+);
+
+<span class="cm">// ③ 同时监听多个</span>
+<span class="fn">watch</span>(
+  [count, () => form.name],
+  ([c, n]) => { ... }
+);
+
+<span class="cm">// ④ 立即执行 + 深度监听</span>
+<span class="fn">watch</span>(source, fn, {
+  immediate: <span class="kw">true</span>,
+  deep: <span class="kw">true</span>
+});
+
+<span class="cm">// ⑤ 项目实战：监听路由变化</span>
+<span class="fn">watch</span>(
+  () => route.path,
+  () => { auth.<span class="fn">refreshAuth</span>() }
+);</pre>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">生命周期钩子</div>
+        <table style="font-size:.72rem">
+          <tr><th style="color:#34d399">钩子</th><th style="color:#34d399">触发时机</th><th style="color:#34d399">使用频率</th></tr>
+          <tr><td><code>onMounted</code></td><td>组件挂载完成</td><td style="color:#34d399">★★★★★</td></tr>
+          <tr><td><code>onBeforeMount</code></td><td>挂载之前</td><td>★☆☆☆☆</td></tr>
+          <tr><td><code>onUpdated</code></td><td>DOM 更新后</td><td>★★☆☆☆</td></tr>
+          <tr><td><code>onUnmounted</code></td><td>组件销毁前</td><td>★★★☆☆</td></tr>
+        </table>
+        <div style="margin-top:10px;font-weight:700;color:#34d399;font-size:.85rem">项目中的 onMounted 模式</div>
+        <pre style="font-size:.72rem;margin-top:4px"><span class="fn">onMounted</span>(<span class="kw">async</span> () => {
+  <span class="kw">await</span> <span class="fn">fetchData</span>();      <span class="cm">// 加载表格</span>
+  <span class="kw">await</span> <span class="fn">loadDropdowns</span>();  <span class="cm">// 加载下拉</span>
+});</pre>
+      </div>
+      <div style="font-size:.74rem;color:rgba(255,255,255,.55);line-height:1.8">
+        <strong style="color:#60a5fa">对比 MiniUI：</strong>没有生命周期概念，<code>&lt;script&gt;</code> 按顺序执行。数据加载通常放在 <code>$(document).ready()</code> 中，没有组件挂载/卸载的感知。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 22 — 组件通信 ===== -->
+<div class="slide" id="s22" style="background:linear-gradient(135deg,#0d1f36,#0a1628)">
+  <h2>📡 组件通信：defineProps + defineEmits</h2>
+  <div class="c2">
+    <div class="cc cc-p">
+      <div style="font-weight:700;color:#a78bfa;margin-bottom:6px;font-size:.85rem">父传子 — defineProps</div>
+      <pre style="font-size:.72rem"><span class="cm">// ===== 子组件 MyCard.vue =====</span>
+<span class="kw">const</span> props = <span class="fn">defineProps</span>&lt;{
+  title: <span class="kw">string</span>;
+  count?: <span class="kw">number</span>;    <span class="cm">// ? = 可选</span>
+  disabled?: <span class="kw">boolean</span>;
+}&gt;();
+
+<span class="cm">// 读取 props（只读！不能修改）</span>
+console.<span class="fn">log</span>(props.title);
+console.<span class="fn">log</span>(props.disabled);
+
+<span class="cm">// 可以用 computed 基于 props 计算</span>
+<span class="kw">const</span> isDisabled = <span class="fn">computed</span>(() =>
+  props.disabled ?? <span class="kw">false</span>
+);
+
+<span class="cm">// ===== 父组件 =====</span>
+<span class="cm">&lt;!-- 传值：:prop-name="变量" --&gt;</span>
+&lt;<span class="fn">MyCard</span>
+  <span class="str">title</span>=<span class="str">"用户列表"</span>
+  <span class="str">:count</span>=<span class="str">"userCount"</span>
+  <span class="str">:disabled</span>=<span class="str">"isReadOnly"</span>
+/&gt;</pre>
+    </div>
+    <div>
+      <div class="cc cc-o" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#fb923c;margin-bottom:6px;font-size:.85rem">子传父 — defineEmits</div>
+        <pre style="font-size:.72rem"><span class="cm">// ===== 子组件 =====</span>
+<span class="kw">const</span> emit = <span class="fn">defineEmits</span>&lt;{
+  (e: <span class="str">'close'</span>, needRefresh: <span class="kw">boolean</span>): <span class="kw">void</span>
+  (e: <span class="str">'delete'</span>, id: <span class="kw">string</span>): <span class="kw">void</span>
+}&gt;();
+
+<span class="cm">// 触发事件，向上传参数</span>
+<span class="fn">emit</span>(<span class="str">'close'</span>, <span class="kw">true</span>);
+<span class="fn">emit</span>(<span class="str">'delete'</span>, row.id);
+
+<span class="cm">// ===== 父组件 =====</span>
+<span class="cm">&lt;!-- 监听：@事件名="处理函数" --&gt;</span>
+&lt;<span class="fn">MyCard</span>
+  <span class="str">@close</span>=<span class="str">"handleClose"</span>
+  <span class="str">@delete</span>=<span class="str">"handleDelete"</span>
+/&gt;
+
+<span class="kw">const</span> <span class="fn">handleClose</span> = (refresh) => {
+  if (refresh) <span class="fn">fetchData</span>();
+};</pre>
+      </div>
+      <div class="cc cc-g" style="padding:12px 16px">
+        <div style="font-size:.78rem;font-weight:600;color:#34d399;margin-bottom:3px">💡 Props 详细指引</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
+          <strong>核心规则：</strong>只读 · 单向（父→子）· 响应式 · 类型安全<br>
+          <strong>默认值：</strong><code>withDefaults(defineProps&lt;{...}&gt;(), { size: 'medium' })</code><br>
+          <strong>命名：</strong>JS 用 camelCase, 模板用 kebab-case（Vue 自动转换）<br>
+          <strong>VS 函数参数：</strong>Props 是响应式的，父改了值子自动更新<br>
+          <strong>本项目例子：</strong>ComponentsCreate 接收 billNo / guid / isReadOnly
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 23 — 项目中的核心传参规范 ===== -->
+<div class="slide" id="s23" style="background:linear-gradient(135deg,#0a1628,#0f0f1a)">
+  <h2>📦 项目核心规范：传参 / 文件下载 / 确认弹窗</h2>
+  <div class="c2">
+    <div class="cc cc-b">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">标准传参格式</div>
+      <pre style="font-size:.72rem"><span class="cm">// components.ts — 本项目特有的传参方式</span>
+<span class="cm">// 参数包在 { data: JSON.stringify(...) } 中</span>
+
+<span class="kw">export function</span> <span class="fn">saveBase</span>(
+  data: Record&lt;<span class="kw">string</span>, unknown&gt;
+) {
+  <span class="kw">return</span> <span class="fn">post</span>(<span class="str">'/components/saveBase'</span>, {
+    data: <span class="fn">JSON.stringify</span>(data),
+  });
+}
+
+<span class="cm">// 两个数据集同时提交</span>
+<span class="kw">export function</span> <span class="fn">saveBaseCommit</span>(param, materials) {
+  <span class="kw">return</span> <span class="fn">post</span>(<span class="str">'/components/saveBaseCommit'</span>, {
+    data: <span class="fn">JSON.stringify</span>(param),
+    data2: <span class="fn">JSON.stringify</span>(materials),
+  });
+}
+
+<span class="cm">// 数组参数也 JSON.stringify</span>
+<span class="kw">export function</span> <span class="fn">deleteAppInfo</span>(ids: <span class="kw">string</span>[]) {
+  <span class="kw">return</span> <span class="fn">post</span>(<span class="str">'/components/delAppInfo'</span>, {
+    data: <span class="fn">JSON.stringify</span>(ids),
+  });
+}</pre>
+    </div>
+    <div>
+      <div class="cc cc-g" style="margin-bottom:10px">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">文件下载（Blob 方式）</div>
+        <pre style="font-size:.72rem"><span class="cm">// PDF 打印 — 不走 JSON 拦截器</span>
+<span class="kw">const</span> res = <span class="kw">await</span> request.<span class="fn">get</span>(
+  <span class="str">'/components/printPdf'</span>,
+  {
+    params: { billNo },
+    responseType: <span class="str">'blob'</span>  <span class="cm">// 关键！</span>
+  }
+);
+<span class="kw">const</span> url = <span class="fn">URL.createObjectURL</span>(res as Blob);
+<span class="fn">window.open</span>(url);
+
+<span class="cm">// 文件下载</span>
+<span class="kw">const</span> a = document.<span class="fn">createElement</span>(<span class="str">'a'</span>);
+a.href = <span class="fn">URL.createObjectURL</span>(blob);
+a.download = <span class="str">'filename.pdf'</span>;
+a.<span class="fn">click</span>();</pre>
+      </div>
+      <div style="font-size:.73rem;color:rgba(255,255,255,.6);line-height:1.8">
+        <strong style="color:#34d399">对比 MiniUI：</strong><br>
+        MiniUI 用 <code>window.open('/download?id=xxx')</code> 直接访问下载链接，Token 通过 Session 自动带。<br>
+        JWT 方式下要手动在 Blob 下载中带请求头（不走 Axios 拦截器）。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 24 — 部署对比 ===== -->
+<div class="slide" id="s24" style="background:linear-gradient(135deg,#0f172a,#1a1a2e)">
+  <h2>🐳 部署方式：Docker Compose 三服务编排</h2>
+  <div class="c2">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.85rem">MiniUI 旧版</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.72);line-height:2">
+        <div>🔴 打一个 <strong>war 包</strong>，丢到 Tomcat</div>
+        <div>🔴 前后端绑死，无法独立扩容</div>
+        <div>🔴 前端改一行也要重新打包部署整个应用</div>
+        <div>🔴 没有容器化，环境依赖手动安装</div>
+      </div>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">Vue 3 + Docker Compose</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.72);line-height:2">
+        <div>🟢 三个独立服务：<strong>MySQL + Redis + Spring Boot</strong></div>
+        <div>🟢 前端单独 <strong>Vite build</strong> → 静态文件 → Nginx</div>
+        <div>🟢 <code>docker compose up -d</code> 一键启动</div>
+        <div>🟢 healthcheck 保证启动顺序</div>
+        <div>🟢 环境变量覆盖连接地址（容器间通信）</div>
+        <div>🟢 前后端独立发版、独立扩容</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 25 ===== -->
+<div class="slide" id="s25" style="background:radial-gradient(ellipse at 30% 60%,rgba(16,185,129,.22),transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(99,102,241,.18),transparent 60%),linear-gradient(135deg,#0d0d1a,#1a1a2e)">
+  <h2>✅ 升级带来的核心收益</h2>
+  <div class="c3" style="margin-bottom:14px">
+    <div class="card" style="border-color:rgba(52,211,153,.25);text-align:center">
+      <div style="font-size:1.6rem;margin-bottom:6px">⚡</div>
+      <div style="font-weight:700;color:#34d399;margin-bottom:4px">开发效率</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.65);line-height:1.6">前后端并行开发<br>HMR 毫秒级热更新<br>TypeScript 提前发现错误</div>
+    </div>
+    <div class="card" style="border-color:rgba(96,165,250,.25);text-align:center">
+      <div style="font-size:1.6rem;margin-bottom:6px">🔒</div>
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:4px">安全与体验</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.65);line-height:1.6">JWT + Redis 双层认证<br>Token 自动刷新无感<br>SPA 流畅无白屏</div>
+    </div>
+    <div class="card" style="border-color:rgba(251,146,60,.25);text-align:center">
+      <div style="font-size:1.6rem;margin-bottom:6px">🐳</div>
+      <div style="font-weight:700;color:#fb923c;margin-bottom:4px">部署运维</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.65);line-height:1.6">Docker Compose 一键部署<br>前后端独立扩容<br>独立发版互不影响</div>
+    </div>
+  </div>
+  <div style="margin-top:8px;font-size:.9rem;color:rgba(255,255,255,.5);text-align:center;max-width:800px;line-height:1.8">
+    从 <strong style="color:#f87171">MiniUI + jQuery + 前后端一体</strong> 到 <strong style="color:#34d399">Vue 3 + TypeScript + 前后端分离</strong><br>
+    这不只是换了一个框架，而是换了一套<strong>开发范式、部署方式、和思维方式</strong>。
+  </div>
+</div>
+
+</div>
+
+<button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← 上一页</button>
+<div class="pg" id="pg"></div>
+<div class="pgj"><input type="number" id="jumpInput" placeholder="跳" min="1" onkeydown="if(event.key==='Enter')jumpTo()" title="输入页码后回车跳转"></div>
+<button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">下一页 →</button>
+
+<script>
+const slides=['s1','toc','s2','s3','s4','s5','s6','s7','s8','s9','s10','s10a','s10c','s10e','s11','s12','s13','s14','s15','s16','s17','s17a','s17b','s18','s19','s20','s21','s22','s23','s24','s25'];
+const T=slides.length;let c=0;
+function changeSlide(d){
+ document.getElementById(slides[c]).classList.remove('active');
+ c=Math.min(Math.max(c+d,0),T-1);
+ document.getElementById(slides[c]).classList.add('active');
+ document.getElementById('bar').style.width=(c/(T-1)*100)+'%';
+ document.getElementById('idx').textContent=String(c+1).padStart(2,'0')+' / '+String(T).padStart(2,'0');
+ document.getElementById('pg').textContent=(c+1)+' / '+T;
+ document.getElementById('prevBtn').style.opacity=c===0?'0.3':'1';
+ document.getElementById('nextBtn').style.opacity=c===T-1?'0.3':'1';
+ document.getElementById('jumpInput').max=T;
+}
+function jumpTo(){
+ const n=parseInt(document.getElementById('jumpInput').value);
+ if(n>=1&&n<=T){c=n-1;changeSlide(0);}
+ document.getElementById('jumpInput').value='';
+}
+// 触摸滑动支持
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX});
+document.addEventListener('touchend',e=>{
+ const dx=e.changedTouches[0].screenX-tx;
+ if(Math.abs(dx)>60){changeSlide(dx<0?1:-1)}
+});
+// 键盘导航
+document.addEventListener('keydown',e=>{
+ if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();changeSlide(1)}
+ else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();changeSlide(-1)}
+ else if(e.key==='Home'){e.preventDefault();c=0;changeSlide(0)}
+ else if(e.key==='End'){e.preventDefault();c=T-1;changeSlide(0)}
+});
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.tagName!=='PRE'&&!t.closest('pre')&&!t.closest('button')&&!t.closest('.pgj'))changeSlide(1);
+});
+changeSlide(0);
+</script>
+</body>
+</html>
