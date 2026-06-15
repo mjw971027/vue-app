@@ -27,7 +27,13 @@
           工装申请信息
         </div>
       </div>
-      <el-form :model="formData" label-width="100px" :disabled="isReadOnly">
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="100px"
+        :disabled="isReadOnly"
+      >
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="申请编号">
@@ -84,7 +90,7 @@
 
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="工装类别" required>
+            <el-form-item label="工装类别" prop="divCd" required>
               <el-select
                 v-model="formData.divCd"
                 placeholder="请选择"
@@ -100,7 +106,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="需求数" required>
+            <el-form-item label="需求数" prop="numberNo" required>
               <el-input v-model="formData.numberNo" :disabled="isReadOnly" />
             </el-form-item>
           </el-col>
@@ -113,7 +119,7 @@
 
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="需求日期" required>
+            <el-form-item label="需求日期" prop="needDate" required>
               <el-date-picker
                 v-model="formData.needDate"
                 type="date"
@@ -150,7 +156,7 @@
 
         <el-row :gutter="20">
           <el-col :span="24">
-            <el-form-item label="项目名称" required>
+            <el-form-item label="项目名称" prop="componentsName" required>
               <el-input v-model="formData.componentsName" :disabled="isReadOnly" />
             </el-form-item>
           </el-col>
@@ -450,6 +456,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Delete, Upload, Document, List, FolderOpened, Checked } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
 import type {
   ProjectOption,
   UnitOption,
@@ -538,6 +545,45 @@ const uploadData = reactive({
   TypeCd: '01',
   billId: '',
   billNo: ''
+})
+
+// ========== 表单验证 ==========
+const formRef = ref<FormInstance>()
+
+/** 表单验证规则 */
+const formRules = reactive<FormRules>({
+  divCd: [
+    { required: true, message: '请选择工装类别', trigger: 'change' },
+  ],
+  numberNo: [
+    { required: true, message: '请输入需求数', trigger: 'blur' },
+    {
+      validator: (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+        if (value === '' || value === undefined || value === null) {
+          callback(new Error('请输入需求数'))
+          return
+        }
+        const num = Number(value)
+        if (isNaN(num) || num <= 0) {
+          callback(new Error('需求数必须大于 0'))
+          return
+        }
+        if (!Number.isInteger(num)) {
+          callback(new Error('需求数必须为整数'))
+          return
+        }
+        callback()
+      },
+      trigger: 'blur',
+    },
+  ],
+  needDate: [
+    { required: true, message: '请选择需求日期', trigger: 'change' },
+  ],
+  componentsName: [
+    { required: true, message: '请输入项目名称', trigger: 'blur' },
+    { min: 1, max: 200, message: '项目名称长度不超过 200 个字符', trigger: 'blur' },
+  ],
 })
 /** 注入 Authorization 请求头 */
 const uploadHeaders = computed(() => {
@@ -779,6 +825,14 @@ const handleDownloadFile = async (row: ComponentFile) => {
 
 /** 保存 */
 const handleSave = async () => {
+  // 先校验表单
+  if (!formRef.value) return
+  const valid = await formRef.value.validate().catch(() => false)
+  if (!valid) {
+    ElMessage.warning('请正确填写表单内容')
+    return
+  }
+
   saveLoading.value = true
   try {
     const param: Record<string, unknown> = {
@@ -823,6 +877,14 @@ const handleSave = async () => {
 
 /** 提交 */
 const handleCommit = async () => {
+  // 先校验表单
+  if (!formRef.value) return
+  const valid = await formRef.value.validate().catch(() => false)
+  if (!valid) {
+    ElMessage.warning('请正确填写表单内容')
+    return
+  }
+
   if (materialData.value.length === 0) {
     ElMessage.warning('申请材料至少有一条数据')
     return

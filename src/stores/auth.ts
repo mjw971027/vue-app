@@ -33,6 +33,13 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn.value ? getUserInfoFromToken()?.sub || '' : '',
   )
 
+  /**
+   * 会话级权限已获取标记
+   * - true:  已从 API 获取过权限，后续路由切换直接读 localStorage 缓存
+   * - false: 初始状态或 Token 刷新后，需要重新从 API 同步
+   */
+  const permissionsFetchedThisSession = ref(false)
+
   // ===== 计算属性 =====
   const authHeader = computed(() => (token.value ? `Bearer ${token.value}` : null))
 
@@ -47,6 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentUsername.value = getUserInfoFromToken()?.sub || ''
     await fetchPermissions()
     pagePerms.value = getStoredPermissions()
+    permissionsFetchedThisSession.value = true
     return res
   }
 
@@ -62,28 +70,50 @@ export const useAuthStore = defineStore('auth', () => {
     isAdminUser.value = false
     currentUsername.value = ''
     pagePerms.value = []
+    permissionsFetchedThisSession.value = false
     router.push('/login')
   }
 
-  /** 刷新认证状态（路由切换时调用） */
+  /**
+   * 刷新认证状态（路由切换时调用）
+   *
+   * 优化：权限数据不从 API 重复获取
+   * - 首次加载 / Token 刷新后：从 API 同步最新权限
+   * - 普通路由切换：仅从 localStorage 缓存读取，不发起 HTTP 请求
+   */
   function refreshAuth() {
     isLoggedIn.value = isAuthenticated()
     if (isLoggedIn.value) {
       token.value = getToken()
       isAdminUser.value = checkIsAdmin()
       currentUsername.value = getUserInfoFromToken()?.sub || ''
+      // 1) 先同步从缓存加载，保证侧边栏立即渲染
       pagePerms.value = getStoredPermissions()
-      fetchPermissions().then(() => {
-        pagePerms.value = getStoredPermissions()
-      })
+
+      // 2) 仅首次进入时从 API 同步（登录流程已同步，这里处理页面刷新场景）
+      if (!permissionsFetchedThisSession.value) {
+        permissionsFetchedThisSession.value = true
+        fetchPermissions().then(() => {
+          pagePerms.value = getStoredPermissions()
+        })
+      }
+    } else {
+      // 未登录 → 重置会话标记
+      permissionsFetchedThisSession.value = false
     }
   }
 
-  /** 刷新 Token 并存储 */
+  /** 刷新 Token 并存储，同时从 API 刷新权限 */
   function refreshToken(newToken: string, tokenType = 'Bearer', expiresIn = 86400) {
     saveToken({ token: newToken, tokenType, expiresIn })
     token.value = newToken
     isLoggedIn.value = true
+    // Token 刷新后标记为未同步，下次 refreshAuth 会从 API 获取
+    permissionsFetchedThisSession.value = false
+    // 主动触发一次权限刷新（fire-and-forget，不阻塞调用方）
+    fetchPermissions().then(() => {
+      pagePerms.value = getStoredPermissions()
+    })
   }
 
   /** 检查页面权限 */

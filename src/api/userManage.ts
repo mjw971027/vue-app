@@ -24,7 +24,7 @@ export function getUserList() {
  * POST /api/user/register
  */
 export function registerUser(params: UserRegisterParams) {
-  return post<UserManageItem>('/user/register', params as unknown as Record<string, unknown>)
+  return post<UserManageItem>('/user/register', params)
 }
 
 /**
@@ -32,7 +32,7 @@ export function registerUser(params: UserRegisterParams) {
  * PUT /api/user/{id}
  */
 export function updateUser(id: number, params: Partial<UserManageItem>) {
-  return put<UserManageItem>(`/user/${id}`, params as unknown as Record<string, unknown>)
+  return put<UserManageItem>(`/user/${id}`, params)
 }
 
 /**

@@ -107,6 +107,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div>23 · 项目核心规范</div>
     <div>24 · Docker 部署</div>
     <div>25 · 升级收益总结</div>
+    <div style="color:#34d399">26 · 前后端分离的六大核心优势</div>
+    <div style="color:#f87171">27 · 传统一体式开发的五大痛点</div>
+    <div style="color:#34d399">28 · 维护噩梦：一个需求两种世界</div>
+    <div style="color:#fb923c">29 · 技术债务的"利息效应"</div>
+    <div style="color:#60a5fa">30 · 安全性 & 治理能力对比</div>
+    <div style="color:#a78bfa">31 · 业务扩展与多端需求</div>
+    <div style="color:#34d399">32 · 团队协作模式革命</div>
+    <div style="color:#fb923c">33 · 行业大势：不是选不选的问题</div>
+    <div style="color:#60a5fa">34 · 面向领导：为什么必须升级</div>
+    <div style="color:#fb923c">35 · 面向领导：可实性与落地方案</div>
   </div>
   <div style="margin-top:16px;font-size:.75rem;color:rgba(255,255,255,.3)">← → 箭头翻页 · Space 下一页 · Home/End 首尾</div>
 </div>
@@ -1838,6 +1848,603 @@ a.<span class="fn">click</span>();</pre>
   </div>
 </div>
 
+<!-- ===== 26 — 前后端分离核心优势 ===== -->
+<div class="slide" id="s26" style="background:linear-gradient(135deg,#0a1628,#0d1f36)">
+  <h2>🔗 前后端分离的六大核心优势</h2>
+  <div style="width:100%;max-width:1060px;font-size:.82rem">
+    <div class="c3" style="margin-bottom:14px">
+      <div class="cc cc-g" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">🚀</div>
+        <div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:.88rem">并行开发，缩短周期</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          前端后端互不阻塞<br>
+          后端定义好 API 接口文档后<br>
+          两端可同时开发并行推进<br>
+          <strong style="color:#34d399">周期缩短 30%~50%</strong>
+        </div>
+      </div>
+      <div class="cc cc-b" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">📱</div>
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:.88rem">一套后端，多端复用</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          后端提供标准 RESTful API<br>
+          PC Web、移动端、小程序、大屏<br>
+          都可复用同一套接口<br>
+          <strong style="color:#60a5fa">避免重复开发</strong>
+        </div>
+      </div>
+      <div class="cc cc-o" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">🔧</div>
+        <div style="font-weight:700;color:#fb923c;margin-bottom:4px;font-size:.88rem">独立部署，互不影响</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          前端改 UI → 只发布前端<br>
+          后端改逻辑 → 只发布后端<br>
+          <strong style="color:#fb923c">故障隔离，一个挂了另一个不受影响</strong>
+        </div>
+      </div>
+    </div>
+    <div class="c3">
+      <div class="cc cc-p" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">👥</div>
+        <div style="font-weight:700;color:#a78bfa;margin-bottom:4px;font-size:.88rem">职责清晰，专业分工</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          前端专注：交互、体验、性能<br>
+          后端专注：业务、数据、安全<br>
+          Java 开发不再写 jQuery<br>
+          <strong style="color:#a78bfa">各司其职，代码质量更高</strong>
+        </div>
+      </div>
+      <div class="cc cc-y" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">⚙️</div>
+        <div style="font-weight:700;color:#fbbf24;margin-bottom:4px;font-size:.88rem">技术栈独立，灵活选型</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          前端可以换 React / Angular<br>
+          后端可以换 Spring Boot / Go<br>
+          互不依赖，可独立演进<br>
+          <strong style="color:#fbbf24">降低技术债务风险</strong>
+        </div>
+      </div>
+      <div class="cc cc-r" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">📈</div>
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">弹性扩容，降本增效</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          前端静态资源 → CDN 加速<br>
+          后端 API → 按需加实例<br>
+          流量高峰时只扩容瓶颈服务<br>
+          <strong style="color:#f87171">节省服务器成本</strong>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:14px 20px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:12px;font-size:.78rem;color:rgba(255,255,255,.75);line-height:1.9">
+      <strong style="color:#34d399">💡 核心思想：</strong>
+      前后端分离的本质是 <strong style="color:#34d399">解耦</strong>——开发解耦、部署解耦、技术解耦、团队解耦。
+      MiniUI 时代前后端是一个整体，改一行 HTML 都可能需要重新编译部署整个 Java 项目；
+      现在前端和后端是两个独立工程，任何一方出问题都不会"团灭"。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26a — 传统一体式开发的5大痛点 ===== -->
+<div class="slide" id="s26a" style="background:linear-gradient(135deg,#0f0a1a,#1a0a2e)">
+  <h2 style="margin-bottom:4px">💀 传统一体式开发的五大痛点 — 每一个都是"慢性毒药"</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:16px">为什么前后端一体是过去式、分离是必然？先看清旧模式到底痛在哪里。</div>
+  <div style="width:100%;max-width:1020px">
+    <div class="c2" style="margin-bottom:12px">
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🕐 痛点一：开发互锁，效率低下</div>
+        <table style="font-size:.72rem">
+          <tr><td style="color:#fca5a5;white-space:nowrap">场景</td><td>前端改个按钮颜色 → 后端也要重新编译打包 → 前后端互相阻塞</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">后果</td><td>前端等后端写好接口才能联调；后端等前端提需求才能改页面；双方相互等待</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">数据</td><td>据统计，一体式项目中 40% 的开发时间花在"等待对方完成"上</td></tr>
+        </table>
+      </div>
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🔒 痛点二：部署绑定，"一荣俱荣，一损俱损"</div>
+        <table style="font-size:.72rem">
+          <tr><td style="color:#fca5a5;white-space:nowrap">场景</td><td>前端 CSS 里改了一行 → 整个 war 包重打 → 后端也一起重新部署</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">风险</td><td>前端小改动可能引入后端回归测试；后端出 Bug 时前端服务也被迫停机</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">结果</td><td>无法独立发版 → 发版流程沉重 → 迭代速度越来越慢</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="c2" style="margin-bottom:12px">
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">👥 痛点三：角色混乱，Java 开发被迫写前端</div>
+        <table style="font-size:.72rem">
+          <tr><td style="color:#fca5a5;white-space:nowrap">现状</td><td>Java 开发从 Service 写到 JSP/HTML，一个人包揽全栈</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">代价</td><td>后端逻辑质量下降（精力分散）；前端代码质量差（非专业前端）</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">恶性循环</td><td>前端写得烂 → 后续改不动 → 越改越烂 → 没人敢维护</td></tr>
+        </table>
+      </div>
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">📉 痛点四：代码腐化，维护成本指数增长</div>
+        <table style="font-size:.72rem">
+          <tr><td style="color:#fca5a5;white-space:nowrap">表现</td><td>同一段表单逻辑 copy 到 5 个页面；改一个 BUG 要改 5 处</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">原因</td><td>HTML 没有组件化 → 复制粘贴是唯一的"复用"手段 → 代码量爆炸</td></tr>
+          <tr><td style="color:#fca5a5;white-space:nowrap">后果</td><td>维护难度 = 页面数 × 功能数；新增一个字段要改 N 个 HTML 文件</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="cc cc-r" style="padding:14px 18px;margin-bottom:8px">
+      <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🧱 痛点五：无法多端扩展 — "锁死"了系统的未来</div>
+      <table style="font-size:.72rem">
+        <tr><td style="color:#fca5a5;white-space:nowrap">需求</td><td>领导说"我们也要做个小程序版本"或"给领导做个大屏看板"</td></tr>
+        <tr><td style="color:#fca5a5;white-space:nowrap">困境</td><td>一体式架构下，后端逻辑和前端 HTML 混在一起，无法单独暴露 API → 小程序/看板没接口可用</td></tr>
+        <tr><td style="color:#fca5a5;white-space:nowrap">结果</td><td>要么重新写一套接口（重复劳动），要么放弃多端（业务受限）</td></tr>
+      </table>
+    </div>
+    <div style="padding:14px 20px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:12px;font-size:.78rem;color:rgba(255,255,255,.72);text-align:center;line-height:1.8">
+      <strong style="color:#fca5a5">🔴 核心结论：</strong>
+      前后端一体就像<strong>连体婴儿</strong> — 做什么都要一起动，一个出问题另一个也遭殃。
+      这种模式在 2010 年代是主流，但在 2026 年的今天，已经是<strong style="color:#fca5a5">严重拖累团队效率的系统性架构债</strong>。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26b — 维护噩梦：真实场景对比 ===== -->
+<div class="slide" id="s26b" style="background:linear-gradient(135deg,#0a1628,#0d1f36)">
+  <h2 style="margin-bottom:4px">🤯 维护噩梦 — 同一个需求，两种世界</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:16px">场景：产品经理要求"在工装申请表单里新增一个'紧急程度'字段"</div>
+  <div class="c2" style="width:100%;max-width:1060px">
+    <div class="cc cc-r">
+      <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:.88rem">❌ 前后端一体时代 — 要改 7 个地方</div>
+      <table style="font-size:.72rem;margin-bottom:10px">
+        <tr><th style="color:#fca5a5;width:8%">#</th><th style="color:#fca5a5;width:40%">改什么</th><th style="color:#fca5a5">在哪改</th></tr>
+        <tr><td>1</td><td>数据库加字段</td><td>SQL 脚本 / Entity 类</td></tr>
+        <tr><td>2</td><td>Java 实体加属性</td><td>XXXEntity.java</td></tr>
+        <tr><td>3</td><td>Mapper XML 改查询</td><td>XXXMapper.xml</td></tr>
+        <tr><td>4</td><td>JSP/HTML 表单加输入框</td><td>page1.html</td></tr>
+        <tr><td>5</td><td>JSP/HTML 详情页加显示</td><td>detail.html</td></tr>
+        <tr><td>6</td><td>JSP/HTML 列表页加列</td><td>list.html</td></tr>
+        <tr><td>7</td><td>JS 取值/赋值逻辑</td><td>page1.js, list.js</td></tr>
+      </table>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.65);padding:8px 10px;background:rgba(248,113,113,.1);border-radius:8px;line-height:1.7">
+        <strong style="color:#fca5a5">⚠️ 现实：</strong>如果还有审批页、打印页、导出 Excel...
+        每个都再加 1-2 处修改。一个字段 = 10+ 处改动 = 极高漏改风险。
+      </div>
+    </div>
+    <div class="cc cc-g">
+      <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.88rem">✅ 前后端分离 + Vue 组件化 — 只需改 3 个地方</div>
+      <table style="font-size:.72rem;margin-bottom:10px">
+        <tr><th style="color:#6ee7b7;width:8%">#</th><th style="color:#6ee7b7;width:40%">改什么</th><th style="color:#6ee7b7">在哪改</th></tr>
+        <tr><td>1</td><td>数据库 + 后端接口</td><td>Java 侧（后端独立改）</td></tr>
+        <tr><td>2</td><td>TS 类型 + 表单组件</td><td>ComponentsCreate.vue（一处！）</td></tr>
+        <tr><td>3</td><td>表格列定义</td><td>Page4.vue（表格列配置）</td></tr>
+      </table>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.65);padding:8px 10px;background:rgba(52,211,153,.1);border-radius:8px;line-height:1.7;margin-bottom:8px">
+        <strong style="color:#34d399">⭐ 关键：</strong>表单组件是复用的！add/edit/detail 共享一个 ComponentsCreate.vue → 改一处，三个页面同时生效。
+      </div>
+      <div style="padding:12px 16px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:10px;font-size:.74rem;color:rgba(255,255,255,.7);line-height:1.8">
+        <strong style="color:#34d399">效率对比：</strong><br>
+        前后端一体：1 个字段 ≈ 10+ 处修改 ≈ <strong style="color:#f87171">半天到一天</strong><br>
+        前后端分离：1 个字段 ≈ 3 处修改 ≈ <strong style="color:#34d399">30 分钟到 1 小时</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26c — 不分离的长期隐患 ===== -->
+<div class="slide" id="s26c" style="background:linear-gradient(135deg,#0f172a,#1a0a2e)">
+  <h2 style="margin-bottom:4px">⏳ 技术债务的"利息效应" — 为什么不分离会越来越贵</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:14px">技术债像信用卡：今天不还，明天的利息会吃掉你更多的预算。</div>
+  <div style="width:100%;max-width:1040px">
+    <div class="c2" style="margin-bottom:14px">
+      <div>
+        <div class="cc cc-r" style="margin-bottom:10px">
+          <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">📊 维护成本随页面数指数增长</div>
+          <pre style="font-size:.73rem"><span class="cm"># 一体式：每新增 1 页 → 独立 HTML + JS + CSS</span>
+  项目初期（5 页） → 维护成本 <span class="num">100</span>%
+  项目中期（20 页）→ 维护成本 <span class="num">400</span>%+
+  项目后期（50 页）→ 维护成本 <span class="num">1000</span>%+
+  <span class="cm"># 关键：代码没有复用，每页都是独立"孤岛"</span>
+  
+  <span class="cm"># 分离式：新增页面 = 组件拼装</span>
+  项目初期（5 页） → 核心组件 <span class="num">3-5</span> 个
+  项目中期（20 页）→ 核心组件 <span class="num">8-12</span> 个
+  项目后期（50 页）→ 核心组件 <span class="num">15-20</span> 个
+  <span class="cm"># 大部分页面是已有组件的排列组合</span></pre>
+        </div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.52);line-height:1.8;text-align:center">
+          <strong style="color:#fca5a5">一体式复用率 ≈ 0%</strong>（每页复制粘贴）<br>
+          <strong style="color:#34d399">分离式复用率 ≈ 60%~80%</strong>（组件化共享）
+        </div>
+      </div>
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🧓 人员流动 = 知识流失</div>
+        <table style="font-size:.72rem;margin-bottom:8px">
+          <tr><td style="color:#fca5a5">入职 3 个月</td><td>能改简单 Bug，不敢动核心逻辑</td></tr>
+          <tr><td style="color:#fca5a5">入职 6 个月</td><td>勉强独立开发新页面（全量复制）</td></tr>
+          <tr><td style="color:#fca5a5">入职 1 年</td><td>熟悉大部分页面，但重构仍无从下手</td></tr>
+        </table>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);padding:8px 10px;background:rgba(248,113,113,.08);border-radius:8px;line-height:1.7">
+          <strong style="color:#fca5a5">核心原因：</strong>一体式中每个 HTML 页面是一个"黑盒"，没有统一的组件规范 → 新人接手成本极高 → 老员工离职 = 代码看不懂了。
+        </div>
+      </div>
+    </div>
+    <div class="c3" style="margin-bottom:12px">
+      <div class="card" style="text-align:center;border-color:rgba(248,113,113,.2)">
+        <div style="font-size:1.2rem;margin-bottom:2px">🐌</div>
+        <div style="font-weight:700;color:#f87171;margin-bottom:2px;font-size:.82rem">迭代速度衰减</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">第一年 1天/需求<br>第二年 3天/需求<br>第三年 5天+ /需求</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(248,113,113,.2)">
+        <div style="font-size:1.2rem;margin-bottom:2px">🐞</div>
+        <div style="font-weight:700;color:#f87171;margin-bottom:2px;font-size:.82rem">Bug 率飙升</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">没有类型检查<br>改一处漏一处<br>回归测试成本巨大</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(248,113,113,.2)">
+        <div style="font-size:1.2rem;margin-bottom:2px">🚫</div>
+        <div style="font-weight:700;color:#f87171;margin-bottom:2px;font-size:.82rem">无人愿维护</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">新人入职看到 jQuery 代码<br>立刻想离职<br>老员工也抗拒改旧代码</div>
+      </div>
+    </div>
+    <div style="padding:12px 20px;background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);border-radius:10px;font-size:.76rem;color:rgba(255,255,255,.7);text-align:center;line-height:1.8">
+      <strong style="color:#fb923c">🕰️ 时间轴真相：</strong>
+      前后端一体在项目 0-2 年还能凑合，2-5 年维护成本直线上升，5 年以上基本变成"不可维护代码"。
+      <strong style="color:#34d399">越早分离，代价越低，收益越大。</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26d — 前后端分离安全性 ===== -->
+<div class="slide" id="s26d" style="background:linear-gradient(135deg,#071a2e,#0d1f36)">
+  <h2 style="margin-bottom:4px">🛡️ 前后端分离的安全性 & 治理能力 — 一体式做不到的事</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:14px">安全不只是"防黑客"，更是对系统的掌控力和可追溯性。</div>
+  <div style="width:100%;max-width:1060px">
+    <div class="c2" style="margin-bottom:12px">
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">❌ 一体式的安全短板</div>
+        <table style="font-size:.73rem">
+          <tr><td style="color:#fca5a5">Session 劫持</td><td>Cookie 中存 Session ID，一旦泄露 = 账号被盗</td></tr>
+          <tr><td style="color:#fca5a5">CSRF 攻击</td><td>Session 自动带 Cookie，跨站请求伪造风险高</td></tr>
+          <tr><td style="color:#fca5a5">权限散落</td><td>每个页面开头手动检查权限，漏一个就是漏洞</td></tr>
+          <tr><td style="color:#fca5a5">日志缺失</td><td>前后端日志混在一起，出问题难以定位</td></tr>
+          <tr><td style="color:#fca5a5">流量不可控</td><td>无法区分前端/后端流量，无法精准限流</td></tr>
+        </table>
+      </div>
+      <div class="cc cc-g">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.88rem">✅ 分离后的安全增强</div>
+        <table style="font-size:.73rem">
+          <tr><td style="color:#6ee7b7">JWT + Redis</td><td>Token 自带过期时间，Redis 可主动废止</td></tr>
+          <tr><td style="color:#6ee7b7">前端路由守卫</td><td>beforeEach 统一拦截，100% 覆盖无遗漏</td></tr>
+          <tr><td style="color:#6ee7b7">接口级鉴权</td><td>后端 API 独立验证 Token + 权限，双重保险</td></tr>
+          <tr><td style="color:#6ee7b7">独立日志体系</td><td>前端埋点 + 后端 Log → 链路追踪清晰</td></tr>
+          <tr><td style="color:#6ee7b7">API 网关限流</td><td>前端后端分开部署，可对 API 精准熔断/限流</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="c2" style="margin-bottom:12px">
+      <div class="cc cc-b">
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:.85rem">📊 可观测性 — 一体式无法企及的能力</div>
+        <table style="font-size:.72rem">
+          <tr><td style="color:#60a5fa;white-space:nowrap">前端监控</td><td>用户操作路径、页面加载耗时、JS 报错 → 独立采集和分析</td></tr>
+          <tr><td style="color:#60a5fa;white-space:nowrap">API 监控</td><td>每个接口的调用量、耗时、成功率 → 后端独立看板</td></tr>
+          <tr><td style="color:#60a5fa;white-space:nowrap">快速定位</td><td>报错了 → 是前端 Bug 还是后端异常？日志分离后一目了然</td></tr>
+        </table>
+      </div>
+      <div class="cc cc-o">
+        <div style="font-weight:700;color:#fb923c;margin-bottom:4px;font-size:.85rem">🔑 访问控制 — 三级权限模型</div>
+        <table style="font-size:.72rem">
+          <tr><td style="color:#fb923c">L1 登录态</td><td>路由守卫拦截 → 未登录直接跳转 → 全页面覆盖</td></tr>
+          <tr><td style="color:#fb923c">L2 角色权限</td><td>管理员/普通用户 → 菜单显隐 + 路由拦截</td></tr>
+          <tr><td style="color:#fb923c">L3 页面权限</td><td>Page4 只对特定角色开放 → Meta 配置 + 守卫自动检查</td></tr>
+          <tr><td style="color:#60a5fa;font-size:.7rem">一体式：散落在每个 HTML 里的 if 判断，极易遗漏。</td></tr>
+        </table>
+      </div>
+    </div>
+    <div style="padding:12px 20px;background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.15);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.68);text-align:center;line-height:1.8">
+      <strong style="color:#60a5fa">🏢 合规视角：</strong>
+      越来越多企业要求系统具备<strong>完整的访问审计、接口调用链路追踪、前后端独立安全评估</strong>能力。
+      前后端一体架构根本无法满足这些合规要求，架构分离是合规审批的<strong style="color:#34d399">必要条件</strong>。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26e — 业务扩展与多端需求 ===== -->
+<div class="slide" id="s26e" style="background:linear-gradient(135deg,#0a1628,#1a0a2e)">
+  <h2 style="margin-bottom:4px">📱 业务扩展的必然需求 — 前后端分离是通向"多端"的唯一通道</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:14px">未来的系统不再是"一个网页"，而是多个端共享同一套业务能力。</div>
+  <div style="width:100%;max-width:1060px">
+    <div class="c2" style="margin-bottom:14px">
+      <div>
+        <div class="cc cc-p" style="margin-bottom:8px">
+          <div style="font-weight:700;color:#a78bfa;margin-bottom:4px;font-size:.85rem">🌐 只做 Web 就够了吗？未来的扩展场景</div>
+          <table style="font-size:.72rem">
+            <tr><td style="color:#a78bfa">📱 移动端审批</td><td>领导出差时手机审批工装申请 → 需要微信小程序或 H5</td></tr>
+            <tr><td style="color:#a78bfa">📊 数据大屏</td><td>车间/会议室展示工装数据看板 → 需要独立前端项目</td></tr>
+            <tr><td style="color:#a78bfa">🔔 消息推送</td><td>审批结果实时通知到企业微信 → 需要消息中间件对接</td></tr>
+            <tr><td style="color:#a78bfa">🤖 第三方集成</td><td>ERP/PLM 系统需要调我们的工装数据 → API 开放</td></tr>
+            <tr><td style="color:#fca5a5;font-size:.7rem">以上所有场景，一体式架构都无法支持（或需要重写整套接口）</td></tr>
+          </table>
+        </div>
+        <div class="cc cc-g" style="padding:10px 14px">
+          <div style="font-size:.74rem;color:rgba(255,255,255,.68);line-height:1.8">
+            <strong style="color:#34d399">前后端分离 = API 一次开发，永久复用：</strong><br>
+            · PC Web 调这套 API<br>
+            · 小程序调这套 API<br>
+            · 大屏看板调这套 API<br>
+            · 第三方系统调这套 API<br>
+            <strong>接口不变，前端可以无限扩展。</strong>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="cc cc-b" style="margin-bottom:8px">
+          <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:.85rem">🏭 制造业的数字化趋势</div>
+          <table style="font-size:.72rem">
+            <tr><td style="color:#60a5fa">设备数据采集</td><td>PLC/传感器 → 后端 API → 前端实时展示</td></tr>
+            <tr><td style="color:#60a5fa">条码/RFID 扫描</td><td>PDA 手持设备 → 调扫码接口 → 绑定工装</td></tr>
+            <tr><td style="color:#60a5fa">数字孪生</td><td>3D 模型 → 调工装位置数据 → 车间可视化</td></tr>
+            <tr><td style="color:#a78bfa;font-size:.7rem">这些工业 4.0 场景，全部依赖标准 API 接口。</td></tr>
+          </table>
+        </div>
+        <div class="cc cc-o" style="padding:10px 14px">
+          <div style="font-weight:700;color:#fb923c;margin-bottom:3px;font-size:.82rem">📈 数据驱动决策</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.68);line-height:1.7">
+            分离后：前端埋点 → 采集用户行为数据<br>
+            后端日志 → 采集业务数据<br>
+            → 汇总到 BI 系统 → 领导看板
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 20px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.7);text-align:center;line-height:1.8">
+      <strong style="color:#a78bfa">🔮 预判未来：</strong>
+      今天不做前后端分离 = 明年领导想看大屏，后端要拆接口 = 后年要做小程序，后端还得拆接口。
+      <strong style="color:#34d399">趁现在一步到位完成分离，后续所有扩展都是"接一个新前端"而非"拆一个旧后端"。</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26f — 团队协作模式变革 ===== -->
+<div class="slide" id="s26f" style="background:linear-gradient(135deg,#0f1a2e,#0a1628)">
+  <h2 style="margin-bottom:4px">🤝 团队协作模式革命 — 前后端分离重塑组织效能</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:14px">架构决定了团队的协作方式。一体式架构本质上是"串行协作"，分离式是"并行协作"。</div>
+  <div style="width:100%;max-width:1060px">
+    <div class="c2" style="margin-bottom:12px">
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">❌ 一体式：串行协作（3 人团队）</div>
+        <pre style="font-size:.71rem"><span class="cm">// Day 1-2  后端写接口（前端等着）</span>
+  【后端 1 人】写 Controller + Service
+  【前端 1 人】写静态 HTML 原型（等接口）
+  <span class="cm">// Day 3    联调（双方绑定）</span>
+  【后端】改接口 → 【前端】改 JS 取值逻辑
+  <span class="cm">// Day 4-5  改 BUG（互相阻塞）</span>
+  【后端】修逻辑 Bug → 重新部署 → 【前端】重新调
+  <span class="cm">// ⏱️ 总耗时 5 天，有效工作时间不到 60%</span></pre>
+      </div>
+      <div class="cc cc-g">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.88rem">✅ 分离式：并行协作（3 人团队）</div>
+        <pre style="font-size:.71rem"><span class="cm">// 第0步：前后端一起定义 API 文档（30分钟）</span>
+  
+  <span class="cm">// Day 1-2  并行开发（互不阻塞）</span>
+  【后端 1 人】写 Controller + Service + 单元测试
+  【前端 2 人】Mock 数据 + Vue 页面开发
+  <span class="cm">// Day 3    联调（15 分钟对接）</span>
+  接口按文档写得一致 → 一次通过
+  <span class="cm">// ⏱️ 总耗时 3 天，有效工作时间 90%+</span></pre>
+      </div>
+    </div>
+    <div class="c3" style="margin-bottom:12px">
+      <div class="card" style="text-align:center;border-color:rgba(52,211,153,.2)">
+        <div style="font-size:1.2rem;margin-bottom:2px">📝</div>
+        <div style="font-weight:700;color:#34d399;margin-bottom:2px;font-size:.82rem">接口文档 = 团队契约</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">前后端先约定好<br>数据结构、字段类型、返回格式<br>两边按"合同"开发，联调零摩擦</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(96,165,250,.2)">
+        <div style="font-size:1.2rem;margin-bottom:2px">🧪</div>
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:2px;font-size:.82rem">独立测试</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">后端用 Postman 自测<br>前端用 Mock 数据自测<br>联调时问题已极少</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(251,146,60,.2)">
+        <div style="font-size:1.2rem;margin-bottom:2px">🔄</div>
+        <div style="font-weight:700;color:#fb923c;margin-bottom:2px;font-size:.82rem">并行发版</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">前端改 UI 只发前端<br>后端改逻辑只发后端<br>互不干扰，灵活排期</div>
+      </div>
+    </div>
+    <div style="padding:12px 20px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.68);text-align:center;line-height:1.8">
+      <strong style="color:#34d399">💼 管理视角：</strong>
+      一体式 = 前端必须依赖后端环境 = 前后端开发必须同时在场 = 无法灵活排期；
+      分离式 = 前端开发只需 npm run dev =<strong style="color:#34d399"> 前后端完全可以异步协作</strong>，前端可以提前开工、后端可以延迟交付接口。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 26g — 行业趋势 ===== -->
+<div class="slide" id="s26g" style="background:linear-gradient(135deg,#0d1f36,#1a0533)">
+  <h2 style="margin-bottom:4px">🌍 行业大势 — 不是我们在选，是时代在选</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:14px">前后端分离不是"新鲜事物"，而是已经成为了行业基础设施。</div>
+  <div style="width:100%;max-width:1060px">
+    <div class="c2" style="margin-bottom:14px">
+      <div>
+        <div class="cc cc-b" style="margin-bottom:10px">
+          <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">📊 行业数据 — 前后端分离已是绝对主流</div>
+          <table style="font-size:.72rem">
+            <tr><td style="color:#60a5fa">2025 前端框架使用率</td><td>Vue/React/Angular 占新项目 92%+</td></tr>
+            <tr><td style="color:#60a5fa">jQuery 使用趋势</td><td>新项目中占比不到 5%，且逐年下降</td></tr>
+            <tr><td style="color:#60a5fa">企业级系统架构</td><td>前后端分离 + REST API 是标准方案</td></tr>
+            <tr><td style="color:#60a5fa">招聘市场</td><td>"熟悉 Vue/React" 是前端 JD 标配</td></tr>
+          </table>
+        </div>
+        <div class="cc cc-p" style="padding:10px 14px">
+          <div style="font-size:.74rem;color:rgba(255,255,255,.68);line-height:1.8">
+            <strong style="color:#a78bfa">🏢 大型企业案例：</strong><br>
+            · 阿里巴巴 - 全面 Vue/React 前后端分离<br>
+            · 字节跳动 - 微前端 + 后端微服务<br>
+            · 腾讯TDesign - Vue 3 企业组件库<br>
+            · 华为/小米 - 全系使用前端框架
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="cc cc-o" style="margin-bottom:10px">
+          <div style="font-weight:700;color:#fb923c;margin-bottom:6px;font-size:.85rem">🔗 前后端分离已标准化</div>
+          <table style="font-size:.72rem">
+            <tr><td style="color:#fb923c">认证</td><td>JWT + OAuth 2.0 已成标准</td></tr>
+            <tr><td style="color:#fb923c">通信</td><td>RESTful API + JSON 已成共识</td></tr>
+            <tr><td style="color:#fb923c">文档</td><td>Swagger / OpenAPI 自动生成</td></tr>
+            <tr><td style="color:#fb923c">部署</td><td>Docker + Nginx 反向代理</td></tr>
+            <tr><td style="color:#fb923c">工具</td><td>Vite / Webpack 构建工具链</td></tr>
+          </table>
+        </div>
+        <div class="cc cc-r" style="padding:10px 14px">
+          <div style="font-size:.74rem;color:rgba(255,255,255,.68);line-height:1.8">
+            <strong style="color:#f87171">⚠️ 反面教材：</strong><br>
+            坚持一体式的项目，在招聘市场上<strong>几乎招不到愿意维护的开发者</strong>。
+            jQuery/MiniUI 在简历上已经被视为"技术栈老化"的信号 —— 
+            <strong style="color:#fca5a5">不升级 = 团队难以补充新鲜血液。</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:14px 20px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:12px;font-size:.78rem;color:rgba(255,255,255,.75);text-align:center;line-height:1.9">
+      <strong style="color:#60a5fa">📣 一句话告诉领导：</strong>
+      前后端分离不是我们在追赶潮流，而是 <strong style="color:#34d399">整个行业已经跑到了前面</strong>。
+      继续用 MiniUI + jQuery = 我们的技术栈落后同行 <strong style="color:#fca5a5">8-10 年</strong>，未来只会被越拉越远。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 27 — 面向领导：使用 Vue 的必要性 ===== -->
+<div class="slide" id="s27" style="background:linear-gradient(135deg,#0d1f36,#1a0533)">
+  <h2>🎯 为什么必须升级到 Vue？— 面向领导决策层</h2>
+  <div style="width:100%;max-width:1060px">
+    <div class="c2" style="margin-bottom:14px">
+      <div class="cc cc-r">
+        <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.9rem">MiniUI 的未来风险</div>
+        <table style="font-size:.73rem">
+          <tr><td style="color:#fca5a5">❌ 框架停止维护</td><td>MiniUI 不再更新，新浏览器兼容性无保障</td></tr>
+          <tr><td style="color:#fca5a5">❌ 人才断层</td><td>jQuery/MiniUI 开发者越来越难招</td></tr>
+          <tr><td style="color:#fca5a5">❌ 体验落后</td><td>全量刷新白屏，加载慢，体验差</td></tr>
+          <tr><td style="color:#fca5a5">❌ 安全风险</td><td>Session 认证跨域受限，不适用于微服务</td></tr>
+          <tr><td style="color:#fca5a5">❌ 无法多端适配</td><td>纯 HTML 页面，无法对接移动端/小程序</td></tr>
+          <tr><td style="color:#fca5a5">❌ 无构建工具</td><td>代码质量无法保证，Bug 发现周期长</td></tr>
+        </table>
+      </div>
+      <div class="cc cc-g">
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.9rem">Vue 升级的必要性</div>
+        <table style="font-size:.73rem">
+          <tr><td style="color:#6ee7b7">✅ 技术演进必然</td><td>Vue 是业界三大主流框架之一，生态成熟</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 人才储备充足</td><td>Vue 学习门槛低，前端招聘市场供过于求</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 用户体验升级</td><td>SPA 无刷新切换，HMR 热更新，TypeScript 安全</td></tr>
+          <tr><td style="color:#6ee7b7">✅ JWT 无状态认证</td><td>天然支持微服务架构和分布式部署</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 多端复用接口</td><td>一套后端 API，PC/移动/小程序通用</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 提升系统寿命</td><td>现代工具链保证 5-8 年可持续演进</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="c3" style="margin-bottom:10px">
+      <div class="card" style="text-align:center;border-color:rgba(52,211,153,.25)">
+        <div style="font-size:1.4rem;margin-bottom:4px">💰</div>
+        <div style="font-weight:700;color:#34d399;margin-bottom:3px;font-size:.85rem">经济性</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          Vue + Element Plus 免费开源<br>
+          无 License 费用<br>
+          社区资源丰富，降低学习成本
+        </div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(96,165,250,.25)">
+        <div style="font-size:1.4rem;margin-bottom:4px">⏱️</div>
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:3px;font-size:.85rem">时效性</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          Vue 开发效率是 jQuery 的 3-5 倍<br>
+          前端 Bug 编译时发现而非运行时<br>
+          后续需求变更成本大幅降低
+        </div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(251,146,60,.25)">
+        <div style="font-size:1.4rem;margin-bottom:4px">🛡️</div>
+        <div style="font-weight:700;color:#fb923c;margin-bottom:3px;font-size:.85rem">风险规避</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.65);line-height:1.7">
+          避免 MiniUI 停更后的技术债务<br>
+          规避 jQuery 漏洞风险<br>
+          保障系统长期可维护性
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 20px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:10px;font-size:.76rem;color:rgba(255,255,255,.75);text-align:center;line-height:1.8">
+      <strong style="color:#60a5fa">🎯 一句话总结：</strong>
+      不升级 = 技术债务持续累积，人才招聘困难，用户体验停滞不前；
+      <strong style="color:#34d399">升级到 Vue = 一次投入，长期受益，为未来 5 年技术演进打好基础。</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 28 — 面向领导：Vue 的可实现性 ===== -->
+<div class="slide" id="s28" style="background:linear-gradient(135deg,#0a1628,#0f0f1a)">
+  <h2>🛠️ Vue 升级的可实现性 — 怎么落地？</h2>
+  <div style="width:100%;max-width:1060px">
+    <div class="c2" style="margin-bottom:14px">
+      <div class="cc cc-g">
+        <div style="font-weight:700;color:#34d399;margin-bottom:8px;font-size:.9rem">✅ 可行条件已全部具备</div>
+        <table style="font-size:.74rem">
+          <tr><td style="color:#6ee7b7">✅ 后端兼容</td><td>Spring Boot REST API 已就绪，前端只负责调接口</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 方案成熟</td><td>Vue 3 + Element Plus + Vite 是业界标准组合</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 组件库完善</td><td>Element Plus 覆盖表格/表单/弹窗等所有企业场景</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 学习成本低</td><td>有 jQuery 基础的开发者 1-2 周可上手 Vue</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 可渐进迁移</td><td>新功能用 Vue，旧页面逐步替换，不影响业务</td></tr>
+          <tr><td style="color:#6ee7b7">✅ 社区活跃</td><td>Vue 生态 Star 数 300K+，问题可快速找到答案</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="cc cc-b" style="margin-bottom:10px">
+          <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.88rem">📋 实施路径建议</div>
+          <table style="font-size:.73rem">
+            <tr><th style="color:#60a5fa;width:18%">阶段</th><th style="color:#60a5fa;width:38%">内容</th><th style="color:#60a5fa;width:28%">周期</th><th style="color:#60a5fa">风险</th></tr>
+            <tr><td style="color:#a78bfa">P1</td><td>环境搭建 + 登录页迁移</td><td>1-2 周</td><td style="color:#34d399">低</td></tr>
+            <tr><td style="color:#fbbf24">P2</td><td>核心 CRUD 页面（列表+表单）</td><td>3-4 周</td><td style="color:#34d399">低</td></tr>
+            <tr><td style="color:#fb923c">P3</td><td>审批流 + 打印 + 文件上传</td><td>2-3 周</td><td style="color:#fbbf24">中</td></tr>
+            <tr><td style="color:#34d399">P4</td><td>权限系统 + 菜单管理 + 集成测试</td><td>2 周</td><td style="color:#34d399">低</td></tr>
+          </table>
+        </div>
+        <div class="cc cc-o" style="padding:12px 16px;margin-bottom:8px">
+          <div style="font-size:.8rem;font-weight:600;color:#fb923c;margin-bottom:4px">👥 人力配置建议</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
+            <strong>核心开发：</strong>1-2 名 Vue 前端（可现学或外聘）<br>
+            <strong>后端配合：</strong>现有 Java 团队（调整接口格式）<br>
+            <strong>测试保障：</strong>功能测试人员 1 名<br>
+            <strong>总周期：</strong>8-11 周（含测试与上线）
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="c3">
+      <div class="card" style="text-align:center;border-color:rgba(52,211,153,.2)">
+        <div style="font-size:1.2rem;margin-bottom:3px">🔄</div>
+        <div style="font-weight:700;color:#34d399;margin-bottom:3px;font-size:.82rem">新旧并行，灰度切换</div>
+        <div style="font-size:.73rem;color:rgba(255,255,255,.6);line-height:1.6">
+          旧系统 MiniUI 页面继续运行<br>
+          新功能使用 Vue 开发<br>
+          逐步替换，零停机迁移
+        </div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(96,165,250,.2)">
+        <div style="font-size:1.2rem;margin-bottom:3px">📊</div>
+        <div style="font-weight:700;color:#60a5fa;margin-bottom:3px;font-size:.82rem">API Mock 先行</div>
+        <div style="font-size:.73rem;color:rgba(255,255,255,.6);line-height:1.6">
+          后端定义好接口文档后<br>
+          前端用 Mock 数据开发<br>
+          不依赖后端可用性
+        </div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(167,139,250,.2)">
+        <div style="font-size:1.2rem;margin-bottom:3px">🏆</div>
+        <div style="font-weight:700;color:#a78bfa;margin-bottom:3px;font-size:.82rem">已验证落地</div>
+        <div style="font-size:.73rem;color:rgba(255,255,255,.6);line-height:1.6">
+          本项目的 Vue 版已完成<br>
+          ComponentsCreate / Page4 / Login<br>
+          核心功能完整可运行
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:12px 20px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:10px;font-size:.76rem;color:rgba(255,255,255,.78);text-align:center;line-height:1.8">
+      <strong style="color:#34d399">🔑 关键判断：</strong>
+      前后端分离 + Vue 不是"要不要做"的问题，而是"什么时候做"的问题。
+      技术债越晚还，利息越高。现在已经有了完整的参考实现和部署方案，<strong style="color:#34d399">启动条件已完全成熟</strong>。
+    </div>
+  </div>
+</div>
+
 </div>
 
 <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← 上一页</button>
@@ -1846,7 +2453,7 @@ a.<span class="fn">click</span>();</pre>
 <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">下一页 →</button>
 
 <script>
-const slides=['s1','toc','s2','s3','s4','s5','s6','s7','s8','s9','s10','s10a','s10c','s10e','s11','s12','s13','s14','s15','s16','s17','s17a','s17b','s18','s19','s20','s21','s22','s23','s24','s25'];
+const slides=['s1','toc','s2','s3','s4','s5','s6','s7','s8','s9','s10','s10a','s10c','s10e','s11','s12','s13','s14','s15','s16','s17','s17a','s17b','s18','s19','s20','s21','s22','s23','s24','s25','s26','s26a','s26b','s26c','s26d','s26e','s26f','s26g','s27','s28'];
 const T=slides.length;let c=0;
 function changeSlide(d){
  document.getElementById(slides[c]).classList.remove('active');

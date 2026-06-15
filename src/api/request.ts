@@ -53,11 +53,21 @@ service.interceptors.request.use(
 )
 
 /**
- * 响应拦截器：Token 刷新 + 统一错误处理
- * 注意：拦截器将 AxiosResponse 转换为其 .data 字段，需要用 as any 绕开 axios 严格泛型
+ * 响应拦截器：Token 刷新 + 统一错误处理。
+ *
+ * 将 AxiosResponse 解包为 response.data，使 get/post 等方法
+ * 直接返回 ApiResponse<T> 而非 AxiosResponse。
+ *
+ * 注意：TypeScript 的 axios 拦截器类型要求 onFulfilled 返回 V，
+ * 但我们实际返回的是 stringify 后的 data，属于合法运行时转换，
+ * 用 as never 绕过类型检查，返回值通过 get/post 的泛型 R 确保类型安全。
  */
+function onResponseFulfilled(response: AxiosResponse<ApiResponse<unknown>>) {
+  return response.data
+}
+
 service.interceptors.response.use(
-  ((response: AxiosResponse<ApiResponse<unknown>>) => response.data) as any,
+  onResponseFulfilled as never,
 
   async (error) => {
     const status = error.response?.status
@@ -126,20 +136,30 @@ service.interceptors.response.use(
 )
 
 // ===== 封装常用 HTTP 方法 =====
-export function get<T>(url: string, params?: Record<string, unknown>) {
-  return service.get<any, ApiResponse<T>>(url, { params })
+/**
+ * 参数类型设计说明：
+ * params/data 使用 unknown 而非 Record<string, unknown>，
+ * 这样调用方（如 components.ts）可以直接传递任意对象字面量，
+ * 无需在每一处调用时做 as unknown as Record<string, unknown> 强转。
+ * 内部只做一次集中的类型断言传给 axios。
+ */
+
+export function get<T>(url: string, params?: unknown) {
+  return service.get<unknown, ApiResponse<T>>(url, {
+    params: params as Record<string, unknown> | undefined,
+  })
 }
 
-export function post<T>(url: string, data?: Record<string, unknown>) {
-  return service.post<any, ApiResponse<T>>(url, data)
+export function post<T>(url: string, data?: unknown) {
+  return service.post<unknown, ApiResponse<T>>(url, data as Record<string, unknown> | undefined)
 }
 
-export function put<T>(url: string, data?: Record<string, unknown>) {
-  return service.put<any, ApiResponse<T>>(url, data)
+export function put<T>(url: string, data?: unknown) {
+  return service.put<unknown, ApiResponse<T>>(url, data as Record<string, unknown> | undefined)
 }
 
 export function del<T>(url: string) {
-  return service.delete<any, ApiResponse<T>>(url)
+  return service.delete<unknown, ApiResponse<T>>(url)
 }
 
 export default service

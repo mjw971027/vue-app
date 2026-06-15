@@ -34,7 +34,7 @@ export function getCompanies() {
 export function getDepartments(superOrgnCd: string) {
   return get<DepartmentOption[]>('/components/getDeptCombobox', {
     superOrgnCd,
-  } as Record<string, unknown>)
+  })
 }
 
 /** 获取工程号列表（Page4 用） */
@@ -61,44 +61,44 @@ export function getMaterialSources() {
 
 /** 查询工装申请数据（分页） */
 export function searchComponents(params: ComponentSearchParams) {
-  return get<PaginatedResult<ComponentItem>>('/components/getTComponentsData', params as unknown as Record<string, unknown>)
+  return get<PaginatedResult<ComponentItem>>('/components/getTComponentsData', params)
 }
 
 /** 创建工装申请基础信息 */
 export function createComponent(data: { programName: string; companyNo: string }) {
-  return post<{ guid: string; billNo?: string }>('/components/createBase', data as unknown as Record<string, unknown>)
+  return post<{ guid: string; billNo?: string }>('/components/createBase', data)
 }
 
 /** 删除工装申请 */
 export function deleteComponent(guid: string) {
-  return post<{ flag: number }>('/components/delApp', { guid } as unknown as Record<string, unknown>)
+  return post<{ flag: number }>('/components/delApp', { guid })
 }
 
 /** 撤回工装申请 */
 export function retractComponent(guid: string) {
-  return post<{ flag: number }>('/components/retractApp', { guid } as unknown as Record<string, unknown>)
+  return post<{ flag: number }>('/components/retractApp', { guid })
 }
 
 // ==================== 工装详情 ====================
 
 /** 获取工装申请基本信息 */
 export function getBillInfo(billId: string) {
-  return get<ComponentBillInfo>('/components/getBillInfo', { billId } as Record<string, unknown>)
+  return get<ComponentBillInfo>('/components/getBillInfo', { billId })
 }
 
 /** 获取申请材料列表 */
 export function getComponentsApp(billNo: string) {
-  return get<ComponentMaterial[]>('/components/getComponentsApp', { billNo } as Record<string, unknown>)
+  return get<ComponentMaterial[]>('/components/getComponentsApp', { billNo })
 }
 
 /** 获取附件列表 */
 export function getComponentsAppFile(billNo: string) {
-  return get<ComponentFile[]>('/components/getComponentsAppFile', { billNo } as Record<string, unknown>)
+  return get<ComponentFile[]>('/components/getComponentsAppFile', { billNo })
 }
 
 /** 获取审批记录 */
 export function getComponentsAppAudit(billNo: string) {
-  return get<ComponentAudit[]>('/components/getComponentsAppAudit', { billNo } as Record<string, unknown>)
+  return get<ComponentAudit[]>('/components/getComponentsAppAudit', { billNo })
 }
 
 // ==================== 材料管理 ====================
@@ -107,14 +107,14 @@ export function getComponentsAppAudit(billNo: string) {
 export function deleteAppInfo(ids: (string | undefined)[]) {
   return post<ApiResponse<unknown>>('/components/delAppInfo', {
     data: JSON.stringify(ids),
-  } as unknown as Record<string, unknown>)
+  })
 }
 
 /** 保存申请材料 */
 export function saveAppInfo(data: ComponentMaterial[]) {
   return post<{ flag: number }>('/components/saveAppInfo', {
     data: JSON.stringify(data),
-  } as unknown as Record<string, unknown>)
+  })
 }
 
 // ==================== 文件管理 ====================
@@ -123,7 +123,7 @@ export function saveAppInfo(data: ComponentMaterial[]) {
 export function deleteComFile(ids: (string | undefined)[]) {
   return post<ApiResponse<unknown>>('/components/delComFile', {
     data: JSON.stringify(ids),
-  } as unknown as Record<string, unknown>)
+  })
 }
 
 // ==================== 保存与提交 ====================
@@ -132,7 +132,7 @@ export function deleteComFile(ids: (string | undefined)[]) {
 export function saveBase(data: Record<string, unknown>) {
   return post<{ flag: number }>('/components/saveBase', {
     data: JSON.stringify(data),
-  } as unknown as Record<string, unknown>)
+  })
 }
 
 /** 提交工装申请 */
@@ -140,5 +140,5 @@ export function saveBaseCommit(param: Record<string, unknown>, materials: Compon
   return post<{ flag: number }>('/components/saveBaseCommit', {
     data: JSON.stringify(param),
     data2: JSON.stringify(materials),
-  } as unknown as Record<string, unknown>)
+  })
 }

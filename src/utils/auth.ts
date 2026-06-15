@@ -21,6 +21,29 @@ export interface AuthToken {
 }
 
 /**
+ * JWT Token Payload 结构
+ * 标准 JWT Claims (RFC 7519) + 自定义字段
+ */
+export interface JwtPayload {
+  /** 签发者 */
+  iss?: string
+  /** 主题（用户唯一标识，通常是用户名或用户ID） */
+  sub: string
+  /** 受众 */
+  aud?: string | string[]
+  /** 过期时间（Unix 时间戳） */
+  exp?: number
+  /** 生效时间（Unix 时间戳） */
+  nbf?: number
+  /** 签发时间（Unix 时间戳） */
+  iat?: number
+  /** JWT ID */
+  jti?: string
+  /** 用户角色（如 "ADMIN" / "USER"） */
+  role?: string
+}
+
+/**
  * 存储 Token 到 localStorage
  * @param authToken 认证信息
  */
@@ -122,7 +145,7 @@ export const removeToken = (): void => {
  * @param token JWT Token
  * @returns Payload 对象，解析失败返回 null
  */
-export const parseJwtPayload = (token: string): any => {
+export const parseJwtPayload = (token: string): JwtPayload | null => {
   try {
     // JWT 格式：header.payload.signature
     // 取第二部分（payload），Base64 解码
@@ -146,7 +169,7 @@ export const parseJwtPayload = (token: string): any => {
  * 从 Token 中获取用户信息
  * @returns 用户信息对象，不存在则返回 null
  */
-export const getUserInfoFromToken = (): any => {
+export const getUserInfoFromToken = (): JwtPayload | null => {
   const token = getToken()
   if (!token) {
     return null
