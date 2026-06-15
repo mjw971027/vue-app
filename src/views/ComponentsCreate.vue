@@ -773,7 +773,8 @@ const handleSave = async () => {
       } else {
         ElMessage.success('保存成功')
       }
-      emit('close', true)
+      // 刷新页面数据
+      await loadData()
     }
   } catch {
     ElMessage.error('保存失败')
