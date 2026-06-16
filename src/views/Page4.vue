@@ -93,13 +93,13 @@
     <!-- 操作按钮栏 -->
     <div class="action-bar">
       <div class="action-left">
-        <el-button type="primary" :icon="Search" class="action-btn" @click="handleSearch">查询</el-button>
-        <el-button type="success" :icon="Plus" class="action-btn" plain @click="handleAdd">新增</el-button>
+        <el-button type="primary" class="action-btn" @click="handleSearch"><el-icon><Search /></el-icon>查询</el-button>
+        <el-button type="success" class="action-btn" plain @click="handleAdd"><el-icon><Plus /></el-icon>新增</el-button>
       </div>
       <div class="action-right">
-        <el-button :icon="Delete" class="action-btn" :disabled="!currentRow" @click="handleDelete">删除</el-button>
-        <el-button :icon="RefreshLeft" class="action-btn" :disabled="!currentRow" @click="handleRetract">撤回</el-button>
-        <el-button :icon="Printer" class="action-btn" :disabled="!currentRow" @click="handlePrint">打印</el-button>
+        <el-button class="action-btn" :disabled="!currentRow" @click="handleDelete"><el-icon><Delete /></el-icon>删除</el-button>
+        <el-button class="action-btn" :disabled="!currentRow" @click="handleRetract"><el-icon><RefreshLeft /></el-icon>撤回</el-button>
+        <el-button class="action-btn" :disabled="!currentRow" @click="handlePrint"><el-icon><Printer /></el-icon>打印</el-button>
       </div>
     </div>
 
@@ -200,7 +200,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Plus, Delete, RefreshLeft, Printer } from '@element-plus/icons-vue'
+
+
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type {
   CompanyOption,
@@ -470,17 +471,18 @@ const handlePrint = async () => {
   }
 
   try {
+    // 直接调用 axios 实例（request 是默认导出的 service），
+    // 因为 request.get() 工具函数不支持 responseType 参数
     const res = await request.get('/components/printPdf', {
       params: { billNo: currentRow.value.billNo },
       responseType: 'blob'
     })
-
-    // eslint-disable-next-line no-undef
-    const blob = res.data as Blob
-    // eslint-disable-next-line no-undef
-    const url = URL.createObjectURL(blob)
-    // eslint-disable-next-line no-undef
+    // 响应拦截器已解包为 response.data，blob 模式下就是 Blob 本身
+    const blob = res as Blob
+    const url = URL.createObjectURL(blob) 
     window.open(url)
+    // 1 分钟后释放 blob URL 内存
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
   } catch {
     ElMessage.error('打印失败')
   }

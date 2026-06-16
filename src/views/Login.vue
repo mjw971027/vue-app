@@ -9,7 +9,8 @@ import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { User, Key } from '@element-plus/icons-vue'
+
+
 import { useAuthStore } from '../stores/auth'
 import { isAuthenticated } from '../utils/auth'
 

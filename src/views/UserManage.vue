@@ -13,7 +13,7 @@
   <div class="user-manage">
     <!-- 操作栏 -->
     <div class="action-bar">
-      <el-button type="primary" :icon="Plus" @click="handleAddUser">新增用户</el-button>
+      <el-button type="primary" @click="handleAddUser"><el-icon><Plus /></el-icon>新增用户</el-button>
     </div>
 
     <!-- 用户列表表格 -->
@@ -127,7 +127,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
+
+
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import type { UserManageItem } from '../api/types'

@@ -97,7 +97,7 @@ service.interceptors.response.use(
           const res = await refreshTokenApi(refreshTok)
           const newToken = res.data?.token || res.data?.accessToken
           if (newToken) {
-            authStore.refreshToken(
+            await authStore.refreshToken(
               newToken,
               res.data?.tokenType || 'Bearer',
               res.data?.expiresIn || 86400,
@@ -121,10 +121,21 @@ service.interceptors.response.use(
       }
     }
 
-    // ===== 403：无权限 =====
+    // ===== 403：无权限（Token 无效/过期 或 角色权限不足）=====
     if (status === 403) {
       const { ElMessage } = await import('element-plus')
-      ElMessage.error('无权限访问该资源')
+      ElMessage.error('身份验证失败，请重新登录')
+
+      // 清除本地 Token
+      removeToken()
+
+      // 避免在登录页/注册页重复跳转
+      const currentPath = router.currentRoute.value.path
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        router.push('/login')
+      }
+
+      return Promise.reject(error)
     }
 
     // ===== 其他错误 =====

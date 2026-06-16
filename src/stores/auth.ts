@@ -14,7 +14,6 @@ import {
   isAuthenticated,
   getUserInfoFromToken,
   isAdmin as checkIsAdmin,
-  setPagePermissions as savePagePerms,
   getStoredPermissions,
   clearPermissions,
   refreshPermissions as fetchPermissions,
@@ -55,6 +54,19 @@ export const useAuthStore = defineStore('auth', () => {
     await fetchPermissions()
     pagePerms.value = getStoredPermissions()
     permissionsFetchedThisSession.value = true
+
+    // 权限请求后如果 Token 被拦截器清除（如 403），说明登录实际上无效
+    if (!getToken()) {
+      // 恢复状态
+      token.value = null
+      isLoggedIn.value = false
+      isAdminUser.value = false
+      currentUsername.value = ''
+      pagePerms.value = []
+      permissionsFetchedThisSession.value = false
+      throw new Error('登录失败：无法获取用户权限')
+    }
+
     return res
   }
 
@@ -104,8 +116,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** 刷新 Token 并存储，同时从 API 刷新权限 */
-  function refreshToken(newToken: string, tokenType = 'Bearer', expiresIn = 86400) {
-    saveToken({ token: newToken, tokenType, expiresIn })
+  async function refreshToken(newToken: string, tokenType = 'Bearer', expiresIn = 86400) {
+    await saveToken({ token: newToken, tokenType, expiresIn })
     token.value = newToken
     isLoggedIn.value = true
     // Token 刷新后标记为未同步，下次 refreshAuth 会从 API 获取

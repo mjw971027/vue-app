@@ -76,16 +76,18 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: '用户管理' },
     },
 
-    // 捕获所有未定义的路由，跳转到首页
+    // 404 页面（未匹配路由）
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/',
+      name: 'NotFound',
+      component: () => import('../views/NotFound.vue'),
+      meta: { title: '页面未找到' },
     },
   ],
 })
 
 // ========== 全局前置守卫 ==========
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const isLoggedIn = isAuthenticated()
 
   // 已登录访问登录/注册页 → 跳首页

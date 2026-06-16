@@ -15,7 +15,8 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { User, Key, Message } from '@element-plus/icons-vue'
+
+
 import { registerUser } from '../api/userManage'
 
 const router = useRouter()

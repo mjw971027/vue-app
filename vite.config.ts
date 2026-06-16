@@ -4,15 +4,27 @@
  * 作用：Vite 构建工具的配置文件
  * ============================================================
  */
+/// <reference types="vitest/config" />
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
 
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      AutoImport({
+        imports: ['vue', 'vue-router', 'pinia'],
+        dts: 'src/auto-imports.d.ts',
+      }),
+      Components({
+        dts: 'src/components.d.ts',
+      }),
+    ],
 
     server: {
       port: Number(env.VITE_PORT) || 5173,
@@ -40,6 +52,19 @@ export default defineConfig(({ mode }) => {
               return 'vue-vendor'
           },
         },
+      },
+    },
+
+    // ===== Vitest 测试配置 =====
+    test: {
+      environment: 'happy-dom',
+      globals: true,
+      include: ['src/**/*.{test,spec}.{js,ts}'],
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html'],
+        include: ['src/**/*.{ts,vue}'],
+        exclude: ['src/**/*.{test,spec}.ts', 'src/**/*.d.ts'],
       },
     },
   }

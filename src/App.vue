@@ -8,10 +8,12 @@
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './stores/auth'
+import ErrorBoundary from './components/ErrorBoundary.vue'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
+
 
 const activeIndex = ref('/')
 const isAuthPage = computed(() => ['/login', '/register'].includes(route.path))
@@ -97,21 +99,33 @@ const handleMenuSelect = (index: string) => {
             </el-button>
           </template>
           <template v-else>
-            <el-menu-item index="/login">
+            <el-button type="primary" link class="sidebar-btn" @click="router.push('/login')">
               <el-icon><User /></el-icon>
               <span>登录</span>
-            </el-menu-item>
+            </el-button>
           </template>
         </div>
       </aside>
 
       <main class="main-content">
-        <router-view />
+        <ErrorBoundary>
+          <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </ErrorBoundary>
       </main>
       </div>
     </template>
 
-    <router-view v-else />
+    <ErrorBoundary v-else>
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </ErrorBoundary>
   </div>
 </template>
 
@@ -238,5 +252,16 @@ $sidebar-width: 220px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* ===== 路由过渡动画 ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

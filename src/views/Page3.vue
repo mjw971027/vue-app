@@ -17,6 +17,8 @@
 import { ref, onMounted } from 'vue'
 // useRouter() 获取路由实例，用于返回首页
 import { useRouter } from 'vue-router'
+
+
 // 导入 API 函数
 import { getSettings, toggleSetting, getSystemInfo } from '../api/settings'
 // 导入类型定义
@@ -112,9 +114,9 @@ onMounted(async () => {
 
       <!-- ========== 数据展示 ========== -->
       <template v-else>
-        <!-- 设置项列表 -->
-        <el-list class="settings-list">
-          <el-list-item v-for="s in settings" :key="s.id" class="setting-item">
+        <!-- 设置项列表（使用普通 div 替代 el-list，因该版本 Element Plus 无独立 list 模块） -->
+        <div class="settings-list">
+          <div v-for="s in settings" :key="s.id" class="setting-item">
             <div class="setting-info">
               <span class="setting-name">{{ s.name }}</span>
               <span class="setting-desc">{{ s.enabled ? '已开启' : '已关闭' }}</span>
@@ -124,8 +126,8 @@ onMounted(async () => {
               @change="toggle(s.id)"
               active-color="#6366f1"
             />
-          </el-list-item>
-        </el-list>
+          </div>
+        </div>
 
         <!-- 底部信息区（从 API 获取） -->
         <el-descriptions

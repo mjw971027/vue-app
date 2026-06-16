@@ -7,6 +7,18 @@
     <meta name="description" content="WKB 工装管理系统 - 高效管理企业工装申请与审批流程" />
     <meta name="keywords" content="工装管理,工装申请,企业管理系统" />
     <meta name="author" content="WKB Team" />
+    <!-- CSP 基础安全策略：限制脚本、样式、连接来源 -->
+    <!-- 注意：frame-ancestors 不支持 meta 方式传递，已在 nginx.conf 响应头中配置 -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob:;
+      font-src 'self' data:;
+      connect-src 'self' ws: wss:;
+      base-uri 'self';
+      form-action 'self';
+    " />
     <title>WKB 工装管理系统</title>
   </head>
   <body>

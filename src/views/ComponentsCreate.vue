@@ -186,8 +186,8 @@
           申请材料
         </div>
         <div v-if="!isReadOnly">
-          <el-button type="primary" size="small" :icon="Plus" @click="handleAddMaterial">新增</el-button>
-          <el-button type="danger" size="small" :icon="Delete" @click="handleDeleteMaterial">删除</el-button>
+          <el-button type="primary" size="small" @click="handleAddMaterial"><el-icon><Plus /></el-icon>新增</el-button>
+          <el-button type="danger" size="small" @click="handleDeleteMaterial"><el-icon><Delete /></el-icon>删除</el-button>
         </div>
       </div>
     <el-table
@@ -344,8 +344,8 @@
             附件信息
           </div>
           <div v-if="!isReadOnly">
-            <el-button type="primary" size="small" :icon="Upload" @click="handleUpload">上传</el-button>
-            <el-button type="danger" size="small" :icon="Delete" @click="handleDeleteFile">删除</el-button>
+            <el-button type="primary" size="small" @click="handleUpload"><el-icon><Upload /></el-icon>上传</el-button>
+            <el-button type="danger" size="small" @click="handleDeleteFile"><el-icon><Delete /></el-icon>删除</el-button>
           </div>
         </div>
         <el-table
@@ -454,7 +454,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Plus, Delete, Upload, Document, List, FolderOpened, Checked } from '@element-plus/icons-vue'
+
+
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import type {

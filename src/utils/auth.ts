@@ -6,8 +6,26 @@
  *   - 封装 localStorage 操作
  *   - 提供类型安全的 Token 存取方法
  *   - 自动处理 Token 过期检查
+ *   - Token 存储使用 AES-GCM 加密（通过 crypto.ts）
  * ============================================================
  */
+
+import { encryptData, decryptData } from './crypto'
+
+// ==================== 加密 Token 缓存 ====================
+// 模块级缓存：Token 在 localStorage 中以 AES-GCM 加密存储，
+// 首次访问时解密并缓存到内存，后续同步读取。
+let cachedToken: string | null = null
+let cachedRefreshToken: string | null = null
+
+/**
+ * 重置 Token 缓存（仅用于测试环境）
+ * 将模块级缓存清空，使 getToken/getRefreshToken 重新从 localStorage 读取
+ */
+export const _resetTokenCacheForTesting = (): void => {
+  cachedToken = null
+  cachedRefreshToken = null
+}
 
 /**
  * 用户认证信息接口
@@ -44,34 +62,53 @@ export interface JwtPayload {
 }
 
 /**
- * 存储 Token 到 localStorage
+ * 初始化 Token 缓存
+ * 从 localStorage 读取加密的 Token 并解密到内存缓存。
+ * **必须在 app.mount() 之前调用**，确保后续同步读取正常工作。
+ */
+export const initTokenStorage = async (): Promise<void> => {
+  const encryptedToken = localStorage.getItem('token')
+  const encryptedRefresh = localStorage.getItem('refreshToken')
+
+  cachedToken = encryptedToken ? await decryptData(encryptedToken) : null
+  cachedRefreshToken = encryptedRefresh ? await decryptData(encryptedRefresh) : null
+}
+
+/**
+ * 存储 Token 到 localStorage（AES-GCM 加密）
  * @param authToken 认证信息
  */
-export const setToken = (authToken: AuthToken): void => {
-  // 存储 Token
-  localStorage.setItem('token', authToken.token)
+export const setToken = async (authToken: AuthToken): Promise<void> => {
+  // 加密后存储 Token
+  const encryptedToken = await encryptData(authToken.token)
+  localStorage.setItem('token', encryptedToken)
   localStorage.setItem('tokenType', authToken.tokenType)
 
   // 计算并存储过期时间（当前时间 + expiresIn 秒）
   const expiresAt = Date.now() + authToken.expiresIn * 1000
   localStorage.setItem('expiresAt', expiresAt.toString())
 
-  // 存储刷新 Token（如果有）
+  // 更新内存缓存
+  cachedToken = authToken.token
+
+  // 加密后存储刷新 Token（如果有）
   if (authToken.refreshToken) {
-    localStorage.setItem('refreshToken', authToken.refreshToken)
+    const encryptedRefresh = await encryptData(authToken.refreshToken)
+    localStorage.setItem('refreshToken', encryptedRefresh)
+    cachedRefreshToken = authToken.refreshToken
   }
 }
 
 /**
- * 从 localStorage 获取 Token
+ * 获取 Token（从内存缓存同步读取）
  * @returns Token 字符串，不存在则返回 null
  */
 export const getToken = (): string | null => {
-  return localStorage.getItem('token')
+  return cachedToken
 }
 
 /**
- * 从 localStorage 获取完整的 Authorization Header 值
+ * 获取完整的 Authorization Header 值
  * @returns "Bearer xxx" 格式，不存在则返回 null
  */
 export const getAuthHeader = (): string | null => {
@@ -123,21 +160,24 @@ export const isAuthenticated = (): boolean => {
 }
 
 /**
- * 获取刷新 Token
+ * 获取刷新 Token（从内存缓存同步读取）
  * @returns 刷新 Token，不存在则返回 null
  */
 export const getRefreshToken = (): string | null => {
-  return localStorage.getItem('refreshToken')
+  return cachedRefreshToken
 }
 
 /**
- * 从 localStorage 移除 Token（退出登录）
+ * 从 localStorage 移除 Token 并清空缓存（退出登录）
  */
 export const removeToken = (): void => {
   localStorage.removeItem('token')
   localStorage.removeItem('tokenType')
   localStorage.removeItem('expiresAt')
   localStorage.removeItem('refreshToken')
+  // 清空内存缓存
+  cachedToken = null
+  cachedRefreshToken = null
 }
 
 /**

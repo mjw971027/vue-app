@@ -108,7 +108,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div>24 · Docker 部署</div>
     <div>25 · 升级收益总结</div>
     <div style="color:#34d399">26 · 前后端分离的六大核心优势</div>
-    <div style="color:#f87171">27 · 传统一体式开发的五大痛点</div>
+    <div style="color:#fbbf24">27 · MiniUI 画面优化的困境</div>
     <div style="color:#34d399">28 · 维护噩梦：一个需求两种世界</div>
     <div style="color:#fb923c">29 · 技术债务的"利息效应"</div>
     <div style="color:#60a5fa">30 · 安全性 & 治理能力对比</div>
@@ -1924,59 +1924,52 @@ a.<span class="fn">click</span>();</pre>
   </div>
 </div>
 
-<!-- ===== 26a — 传统一体式开发的5大痛点 ===== -->
+<!-- ===== 26a — MiniUI 画面优化难题 ===== -->
 <div class="slide" id="s26a" style="background:linear-gradient(135deg,#0f0a1a,#1a0a2e)">
-  <h2 style="margin-bottom:4px">💀 传统一体式开发的五大痛点 — 每一个都是"慢性毒药"</h2>
-  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:16px">为什么前后端一体是过去式、分离是必然？先看清旧模式到底痛在哪里。</div>
+  <h2 style="margin-bottom:4px">🎨 MiniUI 的"天花板" — 画面优化困境</h2>
+  <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:16px">一体式架构下的前端页面，想要做出精美、专业的视觉效果，困难重重。</div>
   <div style="width:100%;max-width:1020px">
     <div class="c2" style="margin-bottom:12px">
       <div class="cc cc-r">
-        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🕐 痛点一：开发互锁，效率低下</div>
+        <div style="font-weight:700;color:#fbbf24;margin-bottom:4px;font-size:.88rem">🖌️ 问题一：UI 组件库陈旧，美观度有限</div>
         <table style="font-size:.72rem">
-          <tr><td style="color:#fca5a5;white-space:nowrap">场景</td><td>前端改个按钮颜色 → 后端也要重新编译打包 → 前后端互相阻塞</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">后果</td><td>前端等后端写好接口才能联调；后端等前端提需求才能改页面；双方相互等待</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">数据</td><td>据统计，一体式项目中 40% 的开发时间花在"等待对方完成"上</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">现状</td><td>MiniUI 内置组件样式固化，不支持灵活定制主题、动效、渐变色等现代化设计</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">对比</td><td>Vue 生态有 Element Plus / Ant Design / Naive UI 等丰富主题，自定义程度极高</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">后果</td><td>用户看到的界面千篇一律，缺乏品牌辨识度，体验感落后</td></tr>
         </table>
       </div>
       <div class="cc cc-r">
-        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🔒 痛点二：部署绑定，"一荣俱荣，一损俱损"</div>
+        <div style="font-weight:700;color:#fbbf24;margin-bottom:4px;font-size:.88rem">📐 问题二：响应式与多端适配困难</div>
         <table style="font-size:.72rem">
-          <tr><td style="color:#fca5a5;white-space:nowrap">场景</td><td>前端 CSS 里改了一行 → 整个 war 包重打 → 后端也一起重新部署</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">风险</td><td>前端小改动可能引入后端回归测试；后端出 Bug 时前端服务也被迫停机</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">结果</td><td>无法独立发版 → 发版流程沉重 → 迭代速度越来越慢</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">现状</td><td>MiniUI 页面布局固定，在不同屏幕尺寸下显示效果难以保证</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">对比</td><td>Vue + CSS 框架可轻松实现 flexible / 栅格 / 媒体查询等响应式方案</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">后果</td><td>大屏看板、移动端、Pad 各端体验割裂，领导审阅时观感不佳</td></tr>
         </table>
       </div>
     </div>
     <div class="c2" style="margin-bottom:12px">
       <div class="cc cc-r">
-        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">👥 痛点三：角色混乱，Java 开发被迫写前端</div>
+        <div style="font-weight:700;color:#fbbf24;margin-bottom:4px;font-size:.88rem">⚡ 问题三：页面加载慢，交互体验粗糙</div>
         <table style="font-size:.72rem">
-          <tr><td style="color:#fca5a5;white-space:nowrap">现状</td><td>Java 开发从 Service 写到 JSP/HTML，一个人包揽全栈</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">代价</td><td>后端逻辑质量下降（精力分散）；前端代码质量差（非专业前端）</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">恶性循环</td><td>前端写得烂 → 后续改不动 → 越改越烂 → 没人敢维护</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">表现</td><td>一体式架构每次页面切换需整页刷新，缺乏 SPA 的流畅过渡效果</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">对比</td><td>Vue SPA 有路由级动画、骨架屏、懒加载，用户体验提升明显</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">后果</td><td>操作卡顿、白屏闪烁，给用户留下"系统很旧"的印象</td></tr>
         </table>
       </div>
       <div class="cc cc-r">
-        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">📉 痛点四：代码腐化，维护成本指数增长</div>
+        <div style="font-weight:700;color:#fbbf24;margin-bottom:4px;font-size:.88rem">🔧 问题四：自定义样式困难，开发效率低</div>
         <table style="font-size:.72rem">
-          <tr><td style="color:#fca5a5;white-space:nowrap">表现</td><td>同一段表单逻辑 copy 到 5 个页面；改一个 BUG 要改 5 处</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">原因</td><td>HTML 没有组件化 → 复制粘贴是唯一的"复用"手段 → 代码量爆炸</td></tr>
-          <tr><td style="color:#fca5a5;white-space:nowrap">后果</td><td>维护难度 = 页面数 × 功能数；新增一个字段要改 N 个 HTML 文件</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">表现</td><td>想改一个按钮样式 → 翻遍全局 CSS → 可能影响其他页面 → 修改成本极高</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">对比</td><td>Vue Scoped CSS / CSS Modules / Tailwind CSS 实现样式隔离与高效定制</td></tr>
+          <tr><td style="color:#fcd34d;white-space:nowrap">后果</td><td>设计师出图后开发者难以还原 → UI 审美落差越来越大</td></tr>
         </table>
       </div>
     </div>
-    <div class="cc cc-r" style="padding:14px 18px;margin-bottom:8px">
-      <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🧱 痛点五：无法多端扩展 — "锁死"了系统的未来</div>
-      <table style="font-size:.72rem">
-        <tr><td style="color:#fca5a5;white-space:nowrap">需求</td><td>领导说"我们也要做个小程序版本"或"给领导做个大屏看板"</td></tr>
-        <tr><td style="color:#fca5a5;white-space:nowrap">困境</td><td>一体式架构下，后端逻辑和前端 HTML 混在一起，无法单独暴露 API → 小程序/看板没接口可用</td></tr>
-        <tr><td style="color:#fca5a5;white-space:nowrap">结果</td><td>要么重新写一套接口（重复劳动），要么放弃多端（业务受限）</td></tr>
-      </table>
-    </div>
-    <div style="padding:14px 20px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:12px;font-size:.78rem;color:rgba(255,255,255,.72);text-align:center;line-height:1.8">
-      <strong style="color:#fca5a5">🔴 核心结论：</strong>
-      前后端一体就像<strong>连体婴儿</strong> — 做什么都要一起动，一个出问题另一个也遭殃。
-      这种模式在 2010 年代是主流，但在 2026 年的今天，已经是<strong style="color:#fca5a5">严重拖累团队效率的系统性架构债</strong>。
+    <div style="padding:14px 20px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:12px;font-size:.78rem;color:rgba(255,255,255,.72);text-align:center;line-height:1.8">
+      <strong style="color:#fbbf24">🎯 核心观点：</strong>
+      在用户体验和视觉审美日益重要的今天，一个<strong style="color:#fbbf24">界面精美、交互流畅</strong>的系统
+      不仅能提升工作效率，更是<strong style="color:#fbbf24">展现团队专业形象的窗口</strong>。
+      从 MiniUI 到 Vue 的架构升级，正是打破审美瓶颈的关键一步。
     </div>
   </div>
 </div>
