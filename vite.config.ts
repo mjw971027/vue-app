@@ -30,8 +30,9 @@ export default defineConfig(({ mode }) => {
       port: Number(env.VITE_PORT) || 5173,
       proxy: {
         '/api': {
-          target: 'http://localhost:8081',
+          target: 'http://169.24.216.110:8081',
           changeOrigin: true,
+          rewrite: (path) => '/dcm' + path.replace(/^\/api/, ''),
         },
       },
     },

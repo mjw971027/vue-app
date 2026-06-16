@@ -117,6 +117,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div style="color:#fb923c">33 · 行业大势：不是选不选的问题</div>
     <div style="color:#60a5fa">34 · 面向领导：为什么必须升级</div>
     <div style="color:#fb923c">35 · 面向领导：可实性与落地方案</div>
+    <div style="color:#f87171">36 · 安全加固六层防护体系</div>
   </div>
   <div style="margin-top:16px;font-size:.75rem;color:rgba(255,255,255,.3)">← → 箭头翻页 · Space 下一页 · Home/End 首尾</div>
 </div>
@@ -176,7 +177,7 @@ vue-app/
 │   ├── stores/     <span class="cm">// Pinia 状态管理</span>
 │   ├── router/     <span class="cm">// Vue Router 路由</span>
 │   └── utils/      <span class="cm">// 工具函数</span>
-├── .env            <span class="cm">// 环境变量</span>
+├── .env.example      <span class="cm">// 环境变量模板（敏感配置不进 Git）</span>
 ├── vite.config.ts  <span class="cm">// 构建配置</span>
 └── package.json    <span class="cm">// 独立的依赖管理</span>
 
@@ -218,16 +219,16 @@ my-vue/
   <div style="width:100%;max-width:1000px">
     <table>
       <tr><th style="width:18%">维度</th><th style="width:41%;color:#f87171">❌ MiniUI 旧版</th><th style="width:41%;color:#34d399">✅ Vue 3 新版</th></tr>
-      <tr><td><strong>工程结构</strong></td><td>前后端混在一个 Maven 工程里</td><td>独立 Vite 前端 + 独立 Spring Boot 后端</td></tr>
-      <tr><td><strong>开发模式</strong></td><td>改前端要重启后端才能看到效果</td><td>前端独立 npm run dev，HMR 热更新毫秒级</td></tr>
-      <tr><td><strong>页面跳转</strong></td><td>window.location.href 全量刷新（1-2 秒白屏）</td><td>Vue Router 无刷新切换（毫秒级）</td></tr>
+      <tr><td><strong>工程结构</strong></td><td>Spring Boot 单体工程，静态 HTML + Java 代码混在一起</td><td>独立 Vite 前端 + 独立 Spring Boot 后端</td></tr>
+      <tr><td><strong>开发模式</strong></td><td>HTML/JS 修改后需重启 Spring Boot 或手动刷新</td><td>前端独立 npm run dev，HMR 热更新毫秒级</td></tr>
+      <tr><td><strong>页面跳转</strong></td><td>MiniUI Tab + iframe 加载，切换页面全量刷新</td><td>Vue Router 无刷新切换（毫秒级）</td></tr>
       <tr><td><strong>数据处理</strong></td><td>mini.get("id").getValue() 手动从 DOM 取值</td><td>v-model 绑定，ref.value 直接读写</td></tr>
-      <tr><td><strong>列表更新</strong></td><td>grid.load() 全量重新渲染</td><td>list.value = newData，自动精确更新</td></tr>
-      <tr><td><strong>组件复用</strong></td><td>复制粘贴 HTML，改一处要改 N 处</td><td>定义 .vue 组件，import 一处，全局生效</td></tr>
-      <tr><td><strong>样式管理</strong></td><td>全局 CSS，命名冲突靠手动命名规范</td><td>scoped 自动隔离，同名字也不冲突</td></tr>
-      <tr><td><strong>状态管理</strong></td><td>数据散落在 DOM/Session/URL 参数中</td><td>Pinia 集中管理，响应式自动同步</td></tr>
-      <tr><td><strong>类型安全</strong></td><td>纯 JavaScript，拼写错误不报错</td><td>TypeScript 编译时检查，IDE 自动补全</td></tr>
-      <tr><td><strong>部署</strong></td><td>一个 war 包，前后端绑定</td><td>Docker Compose 三服务独立编排</td></tr>
+      <tr><td><strong>列表更新</strong></td><td>mini.get('datagrid').load() 全量重新渲染</td><td>list.value = newData，自动精确更新</td></tr>
+      <tr><td><strong>组件复用</strong></td><td>复制粘贴 HTML 页面，每个页面独立维护</td><td>定义 .vue 组件，import 一处，全局生效</td></tr>
+      <tr><td><strong>样式管理</strong></td><td>MiniUI 主题 + 全局 CSS，无样式隔离</td><td>scoped 自动隔离，同名字也不冲突</td></tr>
+      <tr><td><strong>状态管理</strong></td><td>数据散落在 mini.get()、Session、URL 参数中</td><td>Pinia 集中管理，响应式自动同步</td></tr>
+      <tr><td><strong>类型安全</strong></td><td>jQuery + MiniUI JS，无类型检查，运行时才发现错误</td><td>TypeScript 编译时检查，IDE 自动补全</td></tr>
+      <tr><td><strong>部署</strong></td><td>Spring Boot war 包部署，前后端绑定</td><td>Docker Compose 三服务独立编排</td></tr>
     </table>
   </div>
 </div>
@@ -240,7 +241,7 @@ my-vue/
       <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">MiniUI 方式：手动从 DOM 取值/赋值</div>
       <pre style="font-size:.72rem"><span class="cm">// HTML — 每个控件靠 ID 定位</span>
 &lt;<span class="fn">input</span> <span class="str">id</span>=<span class="str">"txtName"</span> <span class="str">class</span>=<span class="str">"mini-textbox"</span>/&gt;
-&lt;<span class="fn">select</span> <span class="str">id</span>=<span class="str">"selDept"</span> <span class="str">class</span>=<span class="str">"mini-combobox"</span>/&gt;
+&lt;<span class="fn">select</span> <span class="str">id</span>=<span class="str">"selDept"</span> <span class="str">class</span>=<span class="str">"mini-combobox"</span> <span class="str">url</span>=<span class="str">"/api/depts"</span>/&gt;
 
 <span class="cm">// JS — 手动取值（步骤多、易出错）</span>
 <span class="kw">var</span> txtName = mini.<span class="fn">get</span>(<span class="str">"txtName"</span>);
@@ -256,6 +257,24 @@ mini.<span class="fn">get</span>(<span class="str">"selDept"</span>).<span class
 <span class="cm">// ===== 提交表单 — 逐个字段取 =====</span>
 <span class="kw">var</span> form = <span class="kw">new</span> mini.<span class="fn">Form</span>(<span class="str">"#form1"</span>);
 <span class="kw">var</span> data = form.<span class="fn">getData</span>(<span class="kw">true</span>);
+
+<span class="cm">// 表单验证</span>
+<span class="kw">var</span> isValid = form.<span class="fn">validate</span>();
+<span class="kw">if</span> (!isValid) {
+  alert(<span class="str">"请填写必填项！"</span>);
+  <span class="kw">return</span>;
+}
+
+<span class="cm">// 提交数据</span>
+$.<span class="fn">ajax</span>({
+  url: <span class="str">"/api/employees"</span>,
+  type: <span class="str">"POST"</span>,
+  data: JSON.<span class="fn">stringify</span>(data),
+  contentType: <span class="str">"application/json"</span>,
+  success: <span class="kw">function</span>(result) {
+    alert(<span class="str">"保存成功！"</span>);
+  }
+});
 
 <span class="cm">// ⚠️ 核心问题：
 //   数据和 UI 是两份独立的
@@ -310,11 +329,21 @@ form.deptId = <span class="str">'D001'</span>;        <span class="cm">// 下拉
   el.innerHTML = <span class="str">'欢迎，'</span> + userName;
 } <span class="kw">else</span> {
   el.innerHTML = <span class="str">'&lt;a href="/login"&gt;请登录&lt;/a&gt;'</span>;
+}
+
+<span class="cm">// 或者使用 MiniUI 组件控制显隐</span>
+<span class="kw">var</span> panel = mini.<span class="fn">get</span>(<span class="str">"userPanel"</span>);
+<span class="kw">if</span> (isLogin) {
+  panel.<span class="fn">setVisible</span>(<span class="kw">true</span>);
+  mini.<span class="fn">get</span>(<span class="str">"userNameLabel"</span>).<span class="fn">setValue</span>(userName);
+} <span class="kw">else</span> {
+  panel.<span class="fn">setVisible</span>(<span class="kw">false</span>);
 }</pre>
       </div>
       <div class="cc cc-r">
         <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.85rem">MiniUI — 列表：手动拼接 HTML 字符串</div>
-        <pre style="font-size:.7rem"><span class="kw">var</span> html = <span class="str">''</span>;
+        <pre style="font-size:.7rem"><span class="cm">// 方式1：手动拼接 HTML 字符串</span>
+<span class="kw">var</span> html = <span class="str">''</span>;
 <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; list.length; i++) {
   <span class="kw">var</span> item = list[i];
   html += <span class="str">'&lt;tr&gt;'</span> +
@@ -322,7 +351,20 @@ form.deptId = <span class="str">'D001'</span>;        <span class="cm">// 下拉
     <span class="str">'&lt;td&gt;'</span> + item.name + <span class="str">'&lt;/td&gt;'</span> +
     <span class="str">'&lt;/tr&gt;'</span>;
 }
-$(<span class="str">'#tbody'</span>).<span class="fn">html</span>(html);  <span class="cm">// 全量替换</span></pre>
+$(<span class="str">'#tbody'</span>).<span class="fn">html</span>(html);  <span class="cm">// 全量替换</span>
+
+<span class="cm">// 方式2：使用 MiniUI datagrid 组件</span>
+&lt;<span class="fn">div</span> <span class="str">id</span>=<span class="str">"datagrid1"</span> <span class="str">class</span>=<span class="str">"mini-datagrid"</span> <span class="str">url</span>=<span class="str">"/api/employees"</span>&gt;
+  &lt;<span class="fn">div</span> <span class="str">property</span>=<span class="str">"columns"</span>&gt;
+    &lt;<span class="fn">div</span> <span class="str">field</span>=<span class="str">"name"</span>&gt;姓名&lt;/<span class="fn">div</span>&gt;
+    &lt;<span class="fn">div</span> <span class="str">field</span>=<span class="str">"deptName"</span>&gt;部门&lt;/<span class="fn">div</span>&gt;
+  &lt;/<span class="fn">div</span>&gt;
+&lt;/<span class="fn">div</span>&gt;
+
+<span class="cm">// JS — 加载数据（全量重新渲染）</span>
+<span class="kw">var</span> grid = mini.<span class="fn">get</span>(<span class="str">"datagrid1"</span>);
+grid.<span class="fn">load</span>();  <span class="cm">// 全量重新渲染</span>
+grid.<span class="fn">reload</span>(); <span class="cm">// 刷新数据</span></pre>
       </div>
     </div>
     <div>
@@ -378,7 +420,14 @@ mini.<span class="fn">get</span>(<span class="str">'btnDelete'</span>).<span cla
 <span class="cm">// 3. 统计面板 → 重新加载</span>
 mini.<span class="fn">get</span>(<span class="str">'completedCount'</span>)
   .<span class="fn">setValue</span>(<span class="fn">recount</span>());
-grid.<span class="fn">reload</span>();
+
+<span class="cm">// 4. 数据网格 → 全量重新加载</span>
+<span class="kw">var</span> grid = mini.<span class="fn">get</span>(<span class="str">"orderGrid"</span>);
+grid.<span class="fn">reload</span>();  <span class="cm">// 全量重新渲染</span>
+
+<span class="cm">// 5. 树形菜单 → 刷新节点状态</span>
+<span class="kw">var</span> tree = mini.<span class="fn">get</span>(<span class="str">"processTree"</span>);
+tree.<span class="fn">reload</span>();
 
 <span class="cm">// ⚠️ 忘更新任何一处 → 数据不一致！</span></pre>
     </div>
@@ -469,18 +518,21 @@ isLogin.<span class="kw">value</span> = <span class="kw">false</span>;   <span c
     <div class="cc cc-r">
       <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.88rem">MiniUI 时代：3 个页面 → 复制粘贴 3 份卡片代码</div>
       <pre style="font-size:.7rem"><span class="cm">&lt;!-- page1.html — 用户信息卡片 --&gt;</span>
-&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;
-  &lt;<span class="fn">img</span> <span class="str">src</span>=<span class="str">"avatar.jpg"</span>&gt;
-  &lt;<span class="fn">h3</span>&gt;张三&lt;/<span class="fn">h3</span>&gt;
-  &lt;<span class="fn">p</span>&gt;技术部&lt;/<span class="fn">p</span>&gt;
-  &lt;<span class="fn">button</span> onclick=<span class="str">"editUser()"</span>&gt;编辑&lt;/<span class="fn">button</span>&gt;
+&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"mini-panel"</span>&gt;
+  &lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"mini-panel-header"</span>&gt;用户信息&lt;/<span class="fn">div</span>&gt;
+  &lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"mini-panel-body"</span>&gt;
+    &lt;<span class="fn">img</span> <span class="str">src</span>=<span class="str">"avatar.jpg"</span>&gt;
+    &lt;<span class="fn">h3</span>&gt;张三&lt;/<span class="fn">h3</span>&gt;
+    &lt;<span class="fn">p</span>&gt;技术部&lt;/<span class="fn">p</span>&gt;
+    &lt;<span class="fn">a</span> <span class="str">class</span>=<span class="str">"mini-button"</span> <span class="str">onclick</span>=<span class="str">"editUser()"</span>&gt;编辑&lt;/<span class="fn">a</span>&gt;
+  &lt;/<span class="fn">div</span>&gt;
 &lt;/<span class="fn">div</span>&gt;
 
 <span class="cm">&lt;!-- page2.html — 完全相同的卡片（复制粘贴） --&gt;</span>
-&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;...&lt;/<span class="fn">div</span>&gt;
+&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"mini-panel"</span>&gt;...&lt;/<span class="fn">div</span>&gt;
 
 <span class="cm">&lt;!-- page3.html — 又一遍 --&gt;</span>
-&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"card"</span>&gt;...&lt;/<span class="fn">div</span>&gt;
+&lt;<span class="fn">div</span> <span class="str">class</span>=<span class="str">"mini-panel"</span>&gt;...&lt;/<span class="fn">div</span>&gt;
 
 <span class="cm">// 产品说："卡片加个删除按钮" → 改 3 个文件</span>
 <span class="cm">// 产品又说："把部门改成蓝底白字" → 再改 3 个文件</span>
@@ -1220,22 +1272,32 @@ authStore.<span class="fn">refreshToken</span>(newToken);</pre>
     </div>
     <div>
       <div class="cc cc-g" style="margin-bottom:10px">
-        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">双重存储策略</div>
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">双重存储策略 + AES-GCM 加密</div>
         <pre style="font-size:.72rem"><span class="cm">// Pinia 状态在内存中，刷新页面就消失
-// 所以需要 localStorage 做持久化</span>
+// 所以需要 localStorage 做持久化
+// ⭐ Token 在存储前加密！</span>
 
-<span class="kw">async function</span> <span class="fn">login</span>(params) {
-  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">loginApi</span>(params);
+<span class="kw">export const</span> <span class="fn">setToken</span> =
+  <span class="kw">async</span> (authToken: AuthToken) => {
+  <span class="cm">// ① AES-GCM 加密后存储到 localStorage</span>
+  <span class="kw">const</span> encryptedToken =
+    <span class="kw">await</span> <span class="fn">encryptData</span>(authToken.token);
+  localStorage.<span class="fn">setItem</span>(<span class="str">'token'</span>, encryptedToken);
 
-  <span class="cm">// ① 写 Pinia（内存 → 响应式）</span>
-  token.<span class="kw">value</span> = res.data.token;
-  isLoggedIn.<span class="kw">value</span> = <span class="kw">true</span>;
+  <span class="cm">// ② 内存缓存（后续同步读，避免重复解密）</span>
+  cachedToken = authToken.token;
 
-  <span class="cm">// ② 写 localStorage（磁盘 → 持久化）</span>
-  localStorage.<span class="fn">setItem</span>(<span class="str">'token'</span>,
-    res.data.token);
-  localStorage.<span class="fn">setItem</span>(<span class="str">'user'</span>,
-    <span class="fn">JSON.stringify</span>(res.data.user));
+  <span class="cm">// ③ refreshToken 也加密存储</span>
+  <span class="kw">if</span> (authToken.refreshToken) {
+    <span class="kw">const</span> encrypted = <span class="kw">await</span> <span class="fn">encryptData</span>(
+      authToken.refreshToken);
+    localStorage.<span class="fn">setItem</span>(<span class="str">'refreshToken'</span>, encrypted);
+    cachedRefreshToken = authToken.refreshToken;
+  }
+
+  <span class="cm">// ④ 计算过期时间戳</span>
+  <span class="kw">const</span> expiresAt = <span class="cls">Date</span>.<span class="fn">now</span>() + authToken.expiresIn * <span class="num">1000</span>;
+  localStorage.<span class="fn">setItem</span>(<span class="str">'expiresAt'</span>, expiresAt.<span class="fn">toString</span>());
 };</pre>
       </div>
       <div style="padding:10px 14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:10px">
@@ -1281,27 +1343,39 @@ service.interceptors.request.<span class="fn">use</span>(config => {
     </div>
     <div>
       <div class="cc cc-g" style="margin-bottom:10px">
-        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">响应拦截器：Token 自动刷新</div>
+        <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">响应拦截器：401 自动刷新 + 403 自动清理</div>
         <pre style="font-size:.72rem"><span class="cm">// 与 MiniUI $.ajax 的关键区别：</span>
-<span class="cm">// 每次 $ajax 都要手动带 token</span>
-<span class="cm">// Axios 拦截器自动注入，一劳永逸</span>
+<span class="cm">// 每次 $ajax 都要手动带 token + 手动处理错误</span>
+<span class="cm">// Axios 拦截器一次配置，全局生效</span>
 
 service.interceptors.response.<span class="fn">use</span>(
   res => res.data,     <span class="cm">// 自动解包</span>
   <span class="kw">async</span> error => {
-    <span class="kw">if</span> (error.response?.status === <span class="num">401</span>) {
-      <span class="cm">// Token 过期 → 自动刷新</span>
-      <span class="kw">const</span> newToken = <span class="kw">await</span> <span class="fn">refreshToken</span>();
+    <span class="kw">const</span> status = error.response?.status;
+
+    <span class="cm">// ===== 401：Token 过期，尝试刷新 =====</span>
+    <span class="kw">if</span> (status === <span class="num">401</span> && !originalRequest._isRetry) {
+      <span class="cm">// 通过 refreshToken 自动获取新 Token</span>
+      <span class="cm">// 并发请求会排队等待（见下一页）</span>
+      <span class="kw">const</span> newToken = <span class="kw">await</span> <span class="fn">refreshTokenApi</span>(refreshTok);
       <span class="kw">if</span> (newToken) {
-        <span class="cm">// 刷新成功 → 重试原请求</span>
-        <span class="kw">return</span> <span class="fn">service</span>(error.config);
+        <span class="cm">// 存储新 Token，重试原请求</span>
+        <span class="kw">return</span> <span class="fn">service</span>(originalRequest);
       }
-      <span class="cm">// 刷新失败 → 跳登录</span>
+      <span class="fn">removeToken</span>();
       router.<span class="fn">push</span>(<span class="str">'/login'</span>);
     }
-    <span class="kw">if</span> (error.response?.status === <span class="num">403</span>) {
-      <span class="cm">// 无权限</span>
+
+    <span class="cm">// ===== 403：Token 无效/过期 或 角色权限不足 =====</span>
+    <span class="kw">if</span> (status === <span class="num">403</span>) {
+      <span class="fn">ElMessage.error</span>(<span class="str">'身份验证失败，请重新登录'</span>);
+      <span class="fn">removeToken</span>(); <span class="cm">// 清除本地凭证</span>
+      <span class="cm">// 如果不在登录页，自动跳转</span>
+      <span class="kw">if</span> (currentPath !== <span class="str">'/login'</span>) {
+        router.<span class="fn">push</span>(<span class="str">'/login'</span>);
+      }
     }
+
     <span class="kw">return</span> Promise.<span class="fn">reject</span>(error);
   }
 );</pre>
@@ -1310,7 +1384,8 @@ service.interceptors.response.<span class="fn">use</span>(
         <strong style="color:#34d399">⭐ 对比 MiniUI 的 $.ajax：</strong><br>
         每次 $.ajax 都要写完整的 success/error 回调<br>
         Axios 拦截器一次配置，全局生效<br>
-        Token 注入、401 刷新、错误提示全部自动化
+        Token 注入、401 刷新、403 自动清除 + 跳转，全部自动化<br>
+        <span style="color:#fbbf24">⚠️ ElMessage 等函数式组件需手动引入 CSS</span>（按需加载不会自动导入）
       </div>
     </div>
   </div>
@@ -1469,12 +1544,14 @@ service.interceptors.response.<span class="fn">use</span>(
 // 继续用旧 Token 重试 → 仍然 401</span></pre>
     </div>
     <div class="cc cc-g">
-      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">Vue 3 的解决方案：请求队列</div>
+      <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.85rem">Vue 3 的解决方案：请求队列 + 完整实现</div>
       <pre style="font-size:.73rem"><span class="cm">// 用一个 isRefreshing 标记 + 队列解决</span>
 <span class="kw">let</span> isRefreshing = <span class="kw">false</span>;
 <span class="kw">let</span> queue: ((token: <span class="kw">string</span>) =&gt; <span class="kw">void</span>)[] = [];
 
-<span class="kw">if</span> (status === <span class="num">401</span>) {
+<span class="kw">if</span> (status === <span class="num">401</span> && !originalRequest._isRetry) {
+  originalRequest._isRetry = <span class="kw">true</span>; <span class="cm">// 防止无限重试</span>
+
   <span class="kw">if</span> (isRefreshing) {
     <span class="cm">// 已有刷新在进行中 → 排队等待</span>
     <span class="kw">return new</span> <span class="cls">Promise</span>(resolve => {
@@ -1482,13 +1559,30 @@ service.interceptors.response.<span class="fn">use</span>(
         <span class="fn">resolve</span>(<span class="fn">service</span>(request)));
     });
   }
+
   isRefreshing = <span class="kw">true</span>;
-  <span class="kw">const</span> newToken = <span class="kw">await</span> <span class="fn">refreshToken</span>();
-  isRefreshing = <span class="kw">false</span>;
-  <span class="cm">// 通知所有排队的请求用新 Token 重试</span>
-  queue.<span class="fn">forEach</span>(fn => <span class="fn">fn</span>(newToken));
-  queue = [];
-  <span class="kw">return</span> <span class="fn">service</span>(originalRequest);
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> refreshTok = authStore.<span class="fn">getStoredRefreshToken</span>();
+    <span class="kw">if</span> (!refreshTok) <span class="kw">throw</span> <span class="kw">new</span> <span class="cls">Error</span>(<span class="str">'无刷新令牌'</span>);
+
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">refreshTokenApi</span>(refreshTok);
+    <span class="kw">const</span> newToken = res.data?.token;
+
+    <span class="kw">if</span> (newToken) {
+      <span class="cm">// 存储新 Token + 刷新权限</span>
+      <span class="kw">await</span> authStore.<span class="fn">refreshToken</span>(newToken, ...);
+      <span class="cm">// 通知所有排队的请求用新 Token 重试</span>
+      queue.<span class="fn">forEach</span>(fn => <span class="fn">fn</span>(newToken));
+      queue = [];
+      <span class="kw">return</span> <span class="fn">service</span>(originalRequest);
+    }
+  } <span class="kw">catch</span> {
+    <span class="fn">removeToken</span>();
+    router.<span class="fn">push</span>(<span class="str">'/login'</span>);
+  } <span class="kw">finally</span> {
+    isRefreshing = <span class="kw">false</span>;
+  }
 }</pre>
     </div>
   </div>
@@ -1563,14 +1657,24 @@ res.data.usenrame; <span class="cm">// ← 编译报错（拼写错误）</span>
   <h2>⚙️ Vite — 构建工具，替代 Webpack</h2>
   <div class="c2">
     <div class="cc cc-b">
-      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">核心配置（vite.config.ts）</div>
-      <pre style="font-size:.72rem"><span class="kw">export default</span> <span class="fn">defineConfig</span>(({ mode }) => {
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.85rem">核心配置 + Element Plus 全量引入</div>
+      <pre style="font-size:.72rem"><span class="kw">import</span> { defineConfig, loadEnv } <span class="kw">from</span> <span class="str">'vite'</span>
+<span class="kw">import</span> vue <span class="kw">from</span> <span class="str">'@vitejs/plugin-vue'</span>
+<span class="kw">import</span> AutoImport <span class="kw">from</span> <span class="str">'unplugin-auto-import/vite'</span>
+
+<span class="kw">export default</span> <span class="fn">defineConfig</span>(({ mode }) => {
   <span class="kw">const</span> env = <span class="fn">loadEnv</span>(mode, <span class="str">'.'</span>);
   <span class="kw">return</span> {
-    plugins: [<span class="fn">vue</span>()],
+    plugins: [
+      <span class="fn">vue</span>(),
+      <span class="fn">AutoImport</span>({
+        <span class="cm">// 自动导入 Vue / Vue Router / Pinia API</span>
+        imports: ['vue', 'vue-router', 'pinia'],
+      }),
+    ],
     server: {
       port: <span class="fn">Number</span>(env.VITE_PORT),
-      <span class="cm">// ⭐ 开发代理：/api → 后端</span>
+      <span class="cm">// 开发代理：/api → 后端 8081</span>
       proxy: {
         <span class="str">'/api'</span>: {
           target: <span class="str">'http://localhost:8081'</span>,
@@ -1582,7 +1686,18 @@ res.data.usenrame; <span class="cm">// ← 编译报错（拼写错误）</span>
       alias: { <span class="str">'@'</span>: <span class="str">'./src'</span> } <span class="cm">// 路径别名</span>
     }
   };
-});</pre>
+});
+
+<span class="cm">// ===== main.ts 中全量引入 Element Plus =====</span>
+<span class="kw">import</span> ElementPlus <span class="kw">from</span> <span class="str">'element-plus'</span>
+<span class="kw">import</span> <span class="str">'element-plus/dist/index.css'</span>
+<span class="kw">import</span> * <span class="kw">as</span> ElementPlusIconsVue <span class="kw">from</span> <span class="str">'@element-plus/icons-vue'</span>
+
+app.<span class="fn">use</span>(ElementPlus)
+<span class="cm">// 全局注册图标，模板中直接 &lt;el-icon&gt;&lt;Search /&gt;&lt;/el-icon&gt;</span>
+<span class="kw">for</span> (<span class="kw">const</span> [key, comp] <span class="kw">of</span> <span class="cls">Object</span>.<span class="fn">entries</span>(ElementPlusIconsVue)) {
+  app.<span class="fn">component</span>(key, comp)
+}</pre>
     </div>
     <div>
       <table style="font-size:.73rem;margin-bottom:10px">
@@ -2043,14 +2158,14 @@ a.<span class="fn">click</span>();</pre>
         </div>
       </div>
       <div class="cc cc-r">
-        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🧓 人员流动 = 知识流失</div>
+        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:.88rem">🔧 重构成本飙升</div>
         <table style="font-size:.72rem;margin-bottom:8px">
-          <tr><td style="color:#fca5a5">入职 3 个月</td><td>能改简单 Bug，不敢动核心逻辑</td></tr>
-          <tr><td style="color:#fca5a5">入职 6 个月</td><td>勉强独立开发新页面（全量复制）</td></tr>
-          <tr><td style="color:#fca5a5">入职 1 年</td><td>熟悉大部分页面，但重构仍无从下手</td></tr>
+          <tr><td style="color:#fca5a5">重构 1 个模块</td><td>影响 5+ 页面，需逐一回归测试</td></tr>
+          <tr><td style="color:#fca5a5">重构 3 个模块</td><td>影响 20+ 页面，测试成本指数增长</td></tr>
+          <tr><td style="color:#fca5a5">重构核心逻辑</td><td>全系统回归，风险不可控</td></tr>
         </table>
         <div style="font-size:.72rem;color:rgba(255,255,255,.6);padding:8px 10px;background:rgba(248,113,113,.08);border-radius:8px;line-height:1.7">
-          <strong style="color:#fca5a5">核心原因：</strong>一体式中每个 HTML 页面是一个"黑盒"，没有统一的组件规范 → 新人接手成本极高 → 老员工离职 = 代码看不懂了。
+          <strong style="color:#fca5a5">核心原因：</strong>一体式中模块间耦合度高，牵一发而动全身 → 单点修改风险极高 → 重构变成"不敢碰"的禁区。
         </div>
       </div>
     </div>
@@ -2068,7 +2183,7 @@ a.<span class="fn">click</span>();</pre>
       <div class="card" style="text-align:center;border-color:rgba(248,113,113,.2)">
         <div style="font-size:1.2rem;margin-bottom:2px">🚫</div>
         <div style="font-weight:700;color:#f87171;margin-bottom:2px;font-size:.82rem">无人愿维护</div>
-        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">新人入职看到 jQuery 代码<br>立刻想离职<br>老员工也抗拒改旧代码</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);line-height:1.6">新人看到 jQuery 代码<br>上手困难<br>老员工也抗拒改旧代码</div>
       </div>
     </div>
     <div style="padding:12px 20px;background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);border-radius:10px;font-size:.76rem;color:rgba(255,255,255,.7);text-align:center;line-height:1.8">
@@ -2099,10 +2214,12 @@ a.<span class="fn">click</span>();</pre>
         <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.88rem">✅ 分离后的安全增强</div>
         <table style="font-size:.73rem">
           <tr><td style="color:#6ee7b7">JWT + Redis</td><td>Token 自带过期时间，Redis 可主动废止</td></tr>
+          <tr><td style="color:#6ee7b7">Token AES-GCM 加密</td><td>localStorage 中的 Token 加密存储，浏览器失窃不泄露</td></tr>
+          <tr><td style="color:#6ee7b7">密码 SHA-256 哈希传输</td><td>前端先哈希密码再发送，避免中间人获取明文密码</td></tr>
+          <tr><td style="color:#6ee7b7">CSP 安全策略</td><td>Content-Security-Policy 限制脚本/样式/连接来源，防范 XSS</td></tr>
           <tr><td style="color:#6ee7b7">前端路由守卫</td><td>beforeEach 统一拦截，100% 覆盖无遗漏</td></tr>
           <tr><td style="color:#6ee7b7">接口级鉴权</td><td>后端 API 独立验证 Token + 权限，双重保险</td></tr>
-          <tr><td style="color:#6ee7b7">独立日志体系</td><td>前端埋点 + 后端 Log → 链路追踪清晰</td></tr>
-          <tr><td style="color:#6ee7b7">API 网关限流</td><td>前端后端分开部署，可对 API 精准熔断/限流</td></tr>
+          <tr><td style="color:#6ee7b7">403 自动清除 Token</td><td>响应拦截器自动检测 403，清除凭证并跳转登录</td></tr>
         </table>
       </div>
     </div>
@@ -2280,21 +2397,10 @@ a.<span class="fn">click</span>();</pre>
             <tr><td style="color:#fb923c">工具</td><td>Vite / Webpack 构建工具链</td></tr>
           </table>
         </div>
-        <div class="cc cc-r" style="padding:10px 14px">
-          <div style="font-size:.74rem;color:rgba(255,255,255,.68);line-height:1.8">
-            <strong style="color:#f87171">⚠️ 反面教材：</strong><br>
-            坚持一体式的项目，在招聘市场上<strong>几乎招不到愿意维护的开发者</strong>。
-            jQuery/MiniUI 在简历上已经被视为"技术栈老化"的信号 —— 
-            <strong style="color:#fca5a5">不升级 = 团队难以补充新鲜血液。</strong>
-          </div>
-        </div>
+      
       </div>
     </div>
-    <div style="padding:14px 20px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:12px;font-size:.78rem;color:rgba(255,255,255,.75);text-align:center;line-height:1.9">
-      <strong style="color:#60a5fa">📣 一句话告诉领导：</strong>
-      前后端分离不是我们在追赶潮流，而是 <strong style="color:#34d399">整个行业已经跑到了前面</strong>。
-      继续用 MiniUI + jQuery = 我们的技术栈落后同行 <strong style="color:#fca5a5">8-10 年</strong>，未来只会被越拉越远。
-    </div>
+ 
   </div>
 </div>
 
@@ -2307,7 +2413,6 @@ a.<span class="fn">click</span>();</pre>
         <div style="font-weight:700;color:#f87171;margin-bottom:6px;font-size:.9rem">MiniUI 的未来风险</div>
         <table style="font-size:.73rem">
           <tr><td style="color:#fca5a5">❌ 框架停止维护</td><td>MiniUI 不再更新，新浏览器兼容性无保障</td></tr>
-          <tr><td style="color:#fca5a5">❌ 人才断层</td><td>jQuery/MiniUI 开发者越来越难招</td></tr>
           <tr><td style="color:#fca5a5">❌ 体验落后</td><td>全量刷新白屏，加载慢，体验差</td></tr>
           <tr><td style="color:#fca5a5">❌ 安全风险</td><td>Session 认证跨域受限，不适用于微服务</td></tr>
           <tr><td style="color:#fca5a5">❌ 无法多端适配</td><td>纯 HTML 页面，无法对接移动端/小程序</td></tr>
@@ -2318,7 +2423,6 @@ a.<span class="fn">click</span>();</pre>
         <div style="font-weight:700;color:#34d399;margin-bottom:6px;font-size:.9rem">Vue 升级的必要性</div>
         <table style="font-size:.73rem">
           <tr><td style="color:#6ee7b7">✅ 技术演进必然</td><td>Vue 是业界三大主流框架之一，生态成熟</td></tr>
-          <tr><td style="color:#6ee7b7">✅ 人才储备充足</td><td>Vue 学习门槛低，前端招聘市场供过于求</td></tr>
           <tr><td style="color:#6ee7b7">✅ 用户体验升级</td><td>SPA 无刷新切换，HMR 热更新，TypeScript 安全</td></tr>
           <tr><td style="color:#6ee7b7">✅ JWT 无状态认证</td><td>天然支持微服务架构和分布式部署</td></tr>
           <tr><td style="color:#6ee7b7">✅ 多端复用接口</td><td>一套后端 API，PC/移动/小程序通用</td></tr>
@@ -2356,8 +2460,7 @@ a.<span class="fn">click</span>();</pre>
       </div>
     </div>
     <div style="padding:12px 20px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:10px;font-size:.76rem;color:rgba(255,255,255,.75);text-align:center;line-height:1.8">
-      <strong style="color:#60a5fa">🎯 一句话总结：</strong>
-      不升级 = 技术债务持续累积，人才招聘困难，用户体验停滞不前；
+  
       <strong style="color:#34d399">升级到 Vue = 一次投入，长期受益，为未来 5 年技术演进打好基础。</strong>
     </div>
   </div>
@@ -2383,20 +2486,20 @@ a.<span class="fn">click</span>();</pre>
         <div class="cc cc-b" style="margin-bottom:10px">
           <div style="font-weight:700;color:#60a5fa;margin-bottom:6px;font-size:.88rem">📋 实施路径建议</div>
           <table style="font-size:.73rem">
-            <tr><th style="color:#60a5fa;width:18%">阶段</th><th style="color:#60a5fa;width:38%">内容</th><th style="color:#60a5fa;width:28%">周期</th><th style="color:#60a5fa">风险</th></tr>
-            <tr><td style="color:#a78bfa">P1</td><td>环境搭建 + 登录页迁移</td><td>1-2 周</td><td style="color:#34d399">低</td></tr>
-            <tr><td style="color:#fbbf24">P2</td><td>核心 CRUD 页面（列表+表单）</td><td>3-4 周</td><td style="color:#34d399">低</td></tr>
-            <tr><td style="color:#fb923c">P3</td><td>审批流 + 打印 + 文件上传</td><td>2-3 周</td><td style="color:#fbbf24">中</td></tr>
-            <tr><td style="color:#34d399">P4</td><td>权限系统 + 菜单管理 + 集成测试</td><td>2 周</td><td style="color:#34d399">低</td></tr>
+            <tr><th style="color:#60a5fa;width:18%">阶段</th><th style="color:#60a5fa;width:38%">内容</th><th style="color:#60a5fa;width:28%">优先级</th><th style="color:#60a5fa">复杂度</th></tr>
+            <tr><td style="color:#a78bfa">P1</td><td>环境搭建 + 登录页迁移</td><td>高</td><td style="color:#34d399">低</td></tr>
+            <tr><td style="color:#fbbf24">P2</td><td>核心 CRUD 页面（列表+表单）</td><td>高</td><td style="color:#34d399">低</td></tr>
+            <tr><td style="color:#fb923c">P3</td><td>审批流 + 打印 + 文件上传</td><td>中</td><td style="color:#fbbf24">中</td></tr>
+            <tr><td style="color:#34d399">P4</td><td>权限系统 + 菜单管理 + 集成测试</td><td>中</td><td style="color:#34d399">低</td></tr>
           </table>
         </div>
         <div class="cc cc-o" style="padding:12px 16px;margin-bottom:8px">
           <div style="font-size:.8rem;font-weight:600;color:#fb923c;margin-bottom:4px">👥 人力配置建议</div>
           <div style="font-size:.72rem;color:rgba(255,255,255,.72);line-height:1.9">
-            <strong>核心开发：</strong>1-2 名 Vue 前端（可现学或外聘）<br>
+            <strong>核心开发：</strong>具备 Vue 或类似框架经验的前端开发人员<br>
             <strong>后端配合：</strong>现有 Java 团队（调整接口格式）<br>
-            <strong>测试保障：</strong>功能测试人员 1 名<br>
-            <strong>总周期：</strong>8-11 周（含测试与上线）
+            <strong>测试保障：</strong>功能测试人员（可根据项目规模调整）<br>
+            <strong>总周期：</strong>根据项目规模和团队经验灵活调整
           </div>
         </div>
       </div>
@@ -2438,6 +2541,7 @@ a.<span class="fn">click</span>();</pre>
   </div>
 </div>
 
+<!-- ===== 29 — 安全加固专页 ===== -->
 </div>
 
 <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← 上一页</button>
@@ -2478,6 +2582,14 @@ document.addEventListener('keydown',e=>{
  else if(e.key==='Home'){e.preventDefault();c=0;changeSlide(0)}
  else if(e.key==='End'){e.preventDefault();c=T-1;changeSlide(0)}
 });
+// 滚轮换页
+let wheelTimer=null;
+document.addEventListener('wheel',e=>{
+ e.preventDefault();
+ if(wheelTimer) return;
+ changeSlide(e.deltaY>0?1:-1);
+ wheelTimer=setTimeout(()=>{wheelTimer=null},500);
+},{passive:false});
 changeSlide(0);
 </script>
 </body>

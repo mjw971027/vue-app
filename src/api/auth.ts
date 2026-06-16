@@ -1,23 +1,18 @@
 /**
  * ============================================================
  * 文件：src/api/auth.ts
- * 作用：认证相关 API 函数
+ * 作用：认证相关 API 函数（适配 mo 后端 Session 认证）
  * 说明：
- *   - 登录、退出登录等接口
- *   - 自动处理 Token 存储
+ *   - 登录使用 Spring Security 表单提交
+ *   - Session Cookie 自动维持会话
  * ============================================================
  */
 
 // 导入 axios 实例（已配置拦截器）
-import request from './request'
-// 导入 Token 管理工具
-import { setToken, removeToken } from '../utils/auth'
-// 导入密码哈希工具
-import { hashPassword } from '../utils/crypto'
+import { post, get } from './request'
 
 /**
  * 登录请求参数接口
- * 对应后端登录接口的 RequestBody
  */
 export interface LoginParams {
   username: string    // 用户名
@@ -25,84 +20,60 @@ export interface LoginParams {
 }
 
 /**
- * 登录 API
- * POST /api/auth/login
+ * 登录 API（Spring Security 表单登录）
+ * POST /login
+ *
+ * mo 后端使用 Spring Security 表单登录，
+ * 需要以 application/x-www-form-urlencoded 格式提交。
  *
  * @param params 登录参数（用户名 + 密码）
- * @returns 登录响应（包含 Token）
+ * @returns 登录响应
  */
-export const login = async (params: LoginParams) => {
-  // 对密码进行 SHA-256 哈希后再传输，降低明文泄露风险
-  const hashedParams = {
-    ...params,
-    password: await hashPassword(params.password),
-  }
+export const login = (params: LoginParams) => {
+  // 构建表单数据（Spring Security 格式）
+  const formData = new URLSearchParams()
+  formData.append('username', params.username)
+  formData.append('password', params.password)
 
-  // 发送登录请求
-  const response = await request.post('/auth/login', hashedParams)
-
-  // 登录成功，存储 Token
-  // 假设后端返回格式：{ token: "xxx", tokenType: "Bearer", expiresIn: 86400 }
-  if (response.data) {
-    setToken({
-      token: response.data.token,
-      tokenType: response.data.tokenType || 'Bearer',
-      expiresIn: response.data.expiresIn || 86400
-    })
-  }
-
-  return response
+  // 发送表单登录请求
+  return post('/login', formData, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  })
 }
 
 /**
- * 退出登录 API
- * POST /api/auth/logout
+ * 退出登录 API（Session 注销）
+ * POST /logout
  *
  * @returns 退出登录响应
  */
-export const logout = async () => {
-  try {
-    // 调用后端退出登录接口（可选）
-    await request.post('/auth/logout')
-  } finally {
-    // 无论后端是否成功，都清除本地 Token
-    removeToken()
-  }
+export const logout = () => {
+  return post('/logout')
 }
 
 /**
  * 获取当前登录用户信息
- * GET /api/auth/me
+ * GET /userInfo
  *
  * @returns 用户信息
  */
-export const getCurrentUser = async () => {
-  return request.get('/auth/me')
-}
-
-/**
- * 刷新 Token API
- * POST /api/auth/refresh
- *
- * @param refreshToken 刷新 Token
- * @returns 刷新后的 Token
- */
-export const refreshToken = async (refreshToken: string) => {
-  return request.post('/auth/refresh', { refreshToken })
+export const getCurrentUser = () => {
+  return get('/userInfo')
 }
 
 /**
  * 修改密码
- * POST /api/auth/change-password
+ * POST /modPwd
  *
+ * @param userCd 用户编码
  * @param oldPassword 旧密码
  * @param newPassword 新密码
  * @returns 修改结果
  */
-export const changePassword = async (oldPassword: string, newPassword: string) => {
-  // 对新旧密码都进行哈希处理
-  return request.post('/auth/change-password', {
-    oldPassword: await hashPassword(oldPassword),
-    newPassword: await hashPassword(newPassword),
+export const changePassword = (userCd: string, oldPassword: string, newPassword: string) => {
+  return post('/modPwd', {
+    userCd,
+    oldPwd: oldPassword,
+    newPwd: newPassword,
   })
 }

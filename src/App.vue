@@ -2,11 +2,12 @@
   ============================================================
   文件：src/App.vue
   作用：Vue 应用的根组件（侧边栏布局 + 认证状态管理）
+  说明：适配 mo 后端 Session 认证
   ============================================================
 -->
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
 import ErrorBoundary from './components/ErrorBoundary.vue'
 
@@ -14,14 +15,18 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
-
 const activeIndex = ref('/')
 const isAuthPage = computed(() => ['/login', '/register'].includes(route.path))
 
-// 组件挂载时 + 路由变化时刷新认证状态
-auth.refreshAuth()
+// 页面加载时检查登录状态
+onMounted(async () => {
+  if (!isAuthPage.value) {
+    await auth.checkAuth()
+  }
+})
+
+// 路由变化时更新激活菜单
 watch(() => route.path, (newPath) => {
-  auth.refreshAuth()
   activeIndex.value = newPath
 })
 
@@ -55,26 +60,27 @@ const handleMenuSelect = (index: string) => {
 
           <el-divider class="menu-divider" />
 
-          <el-menu-item v-if="auth.hasPerm('page1')" index="/page1">
+          <el-menu-item index="/page1">
             <el-icon><Document /></el-icon>
             <span>页面一</span>
           </el-menu-item>
-          <el-menu-item v-if="auth.hasPerm('page2')" index="/page2">
+          <el-menu-item index="/page2">
             <el-icon><DataAnalysis /></el-icon>
             <span>页面二</span>
           </el-menu-item>
-          <el-menu-item v-if="auth.hasPerm('page3')" index="/page3">
+          <el-menu-item index="/page3">
             <el-icon><Setting /></el-icon>
             <span>页面三</span>
           </el-menu-item>
-          <el-menu-item v-if="auth.hasPerm('page4')" index="/page4">
+          <el-menu-item index="/page4">
             <el-icon><Files /></el-icon>
             <span>工装申请</span>
           </el-menu-item>
-          <el-menu-item v-if="auth.isAdminUser" index="/users">
+          <!-- 用户管理暂时禁用（mo 后端无对应 API） -->
+          <!-- <el-menu-item v-if="auth.isAdminUser" index="/users">
             <el-icon><User /></el-icon>
             <span>用户管理</span>
-          </el-menu-item>
+          </el-menu-item> -->
         </el-menu>
 
         <div class="sidebar-footer">
@@ -82,15 +88,6 @@ const handleMenuSelect = (index: string) => {
             <div class="user-info">
               <el-icon><User /></el-icon>
               <span class="user-name">{{ auth.currentUsername }}</span>
-              <el-tag
-                v-if="auth.isAdminUser"
-                size="small"
-                type="warning"
-                effect="dark"
-                round
-              >
-                ADMIN
-              </el-tag>
             </div>
             <el-divider class="footer-divider" />
             <el-button type="danger" link class="sidebar-btn" @click="handleLogout">

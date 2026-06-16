@@ -1,18 +1,17 @@
 <!--
   ============================================================
   文件：src/views/Login.vue
-  作用：用户登录页面
+  作用：用户登录页面（适配 mo 后端 Session 认证）
   ============================================================
 -->
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-
+import { Lock, User, Key } from '@element-plus/icons-vue'
 
 import { useAuthStore } from '../stores/auth'
-import { isAuthenticated } from '../utils/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -53,11 +52,13 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
   })
 }
 
-// 已登录则跳转
-if (isAuthenticated()) {
-  const redirect = (route.query.redirect as string) || '/'
-  router.push(redirect)
-}
+// 页面加载时检查登录状态
+onMounted(async () => {
+  if (auth.isLoggedIn) {
+    const redirect = (route.query.redirect as string) || '/'
+    router.push(redirect)
+  }
+})
 </script>
 
 <template>

@@ -2,6 +2,7 @@
  * ============================================================
  * 文件：src/main.ts
  * 作用：Vue 应用的入口文件（Entry Point）
+ * 说明：适配 mo 后端 Session 认证，无需初始化 Token 缓存
  * ============================================================
  */
 import { createApp } from 'vue'
@@ -24,9 +25,6 @@ import App from './App.vue'
 
 // 路由
 import router from './router'
-
-// 初始化加密 Token 缓存（必须在 app.mount 之前）
-import { initTokenStorage } from './utils/auth'
 
 const app = createApp(App)
 
@@ -70,7 +68,5 @@ app.config.warnHandler = (msg, _instance, trace) => {
   }
 }
 
-// 初始化 Token 加密缓存后再挂载应用
-initTokenStorage().then(() => {
-  app.mount('#app')
-})
+// 直接挂载应用（Session 认证无需初始化 Token 缓存）
+app.mount('#app')

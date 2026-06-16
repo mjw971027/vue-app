@@ -1,13 +1,12 @@
 /**
  * ============================================================
  * 文件：src/api/components.ts
- * 作用：工装申请管理相关 API 接口
- * 说明：统一封装 /components/* 和 /projectManager/* 接口
+ * 作用：工装申请管理相关 API 接口（适配 mo 后端）
+ * 说明：统一封装 /components/*、/comp/*、/projectManager/* 接口
  * ============================================================
  */
 
 import { get, post } from './request'
-import type { ApiResponse } from './types'
 import type {
   CompanyOption,
   DepartmentOption,
@@ -27,7 +26,8 @@ import type {
 
 /** 获取公司主体列表 */
 export function getCompanies() {
-  return get<CompanyOption[]>('/components/getComps')
+  // mo 后端路径：/comp/getComps
+  return get<CompanyOption[]>('/comp/getComps')
 }
 
 /** 获取部门列表 */
@@ -65,7 +65,8 @@ export function searchComponents(params: ComponentSearchParams) {
 }
 
 /** 创建工装申请基础信息 */
-export function createComponent(data: { programName: string; companyNo: string }) {
+export function createComponent(data: { programName: string }) {
+  // mo 后端 createBase 只需要 programName 参数
   return post<{ guid: string; billNo?: string }>('/components/createBase', data)
 }
 
@@ -88,24 +89,28 @@ export function getBillInfo(billId: string) {
 
 /** 获取申请材料列表 */
 export function getComponentsApp(billNo: string) {
-  return get<ComponentMaterial[]>('/components/getComponentsApp', { billNo })
+  // mo 后端路径：/components/getCompnentsApp（注意拼写：Compnents）
+  return get<ComponentMaterial[]>('/components/getCompnentsApp', { billNo })
 }
 
 /** 获取附件列表 */
 export function getComponentsAppFile(billNo: string) {
-  return get<ComponentFile[]>('/components/getComponentsAppFile', { billNo })
+  // mo 后端路径：/components/getCompnentsAppFile
+  return get<ComponentFile[]>('/components/getCompnentsAppFile', { billNo })
 }
 
 /** 获取审批记录 */
 export function getComponentsAppAudit(billNo: string) {
-  return get<ComponentAudit[]>('/components/getComponentsAppAudit', { billNo })
+  // mo 后端路径：/components/getCompnentsAppAudit
+  return get<ComponentAudit[]>('/components/getCompnentsAppAudit', { billNo })
 }
 
 // ==================== 材料管理 ====================
 
 /** 删除申请材料 */
 export function deleteAppInfo(ids: (string | undefined)[]) {
-  return post<ApiResponse<unknown>>('/components/delAppInfo', {
+  // mo 后端直接返回业务数据，不需要 ApiResponse 包装
+  return post<unknown>('/components/delAppInfo', {
     data: JSON.stringify(ids),
   })
 }
@@ -121,7 +126,8 @@ export function saveAppInfo(data: ComponentMaterial[]) {
 
 /** 删除附件 */
 export function deleteComFile(ids: (string | undefined)[]) {
-  return post<ApiResponse<unknown>>('/components/delComFile', {
+  // mo 后端直接返回业务数据，不需要 ApiResponse 包装
+  return post<unknown>('/components/delComFile', {
     data: JSON.stringify(ids),
   })
 }

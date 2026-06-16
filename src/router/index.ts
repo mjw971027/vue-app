@@ -2,10 +2,11 @@
  * ============================================================
  * 文件：src/router/index.ts
  * 作用：Vue Router 路由配置（懒加载 + 页面标题）
+ * 说明：适配 mo 后端 Session 认证
  * ============================================================
  */
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated, isAdmin, getStoredPermissions } from '../utils/auth'
+import { useAuthStore } from '../stores/auth'
 
 const DEFAULT_TITLE = import.meta.env.VITE_APP_TITLE || 'WKB 工装管理系统'
 
@@ -68,13 +69,13 @@ const router = createRouter({
       meta: { requiresAuth: true, pagePermission: 'page4', title: '工装申请管理' },
     },
 
-    // 用户管理（需要认证 + ADMIN 角色）
-    {
-      path: '/users',
-      name: 'UserManage',
-      component: () => import('../views/UserManage.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: '用户管理' },
-    },
+    // 用户管理（暂时禁用，mo 后端无对应 API）
+    // {
+    //   path: '/users',
+    //   name: 'UserManage',
+    //   component: () => import('../views/UserManage.vue'),
+    //   meta: { requiresAuth: true, requiresAdmin: true, title: '用户管理' },
+    // },
 
     // 404 页面（未匹配路由）
     {
@@ -87,32 +88,31 @@ const router = createRouter({
 })
 
 // ========== 全局前置守卫 ==========
-router.beforeEach((to, _from, next) => {
-  const isLoggedIn = isAuthenticated()
+// Session 认证：每次路由切换时检查登录状态
+router.beforeEach(async (to, _from, next) => {
+  const authStore = useAuthStore()
 
-  // 已登录访问登录/注册页 → 跳首页
-  if (['/login', '/register'].includes(to.path) && isLoggedIn) {
+  // 已登录访问登录页 → 跳首页
+  if (to.path === '/login' && authStore.isLoggedIn) {
     next('/')
     return
   }
 
   // 检查认证
   if (to.meta.requiresAuth) {
-    if (!isLoggedIn) {
-      next({ path: '/login', query: { redirect: to.fullPath } })
-      return
-    }
+    // 如果未登录，尝试通过 /userInfo 接口检查 Session 状态
+    if (!authStore.isLoggedIn) {
+      try {
+        await authStore.checkAuth()
+      } catch {
+        // 检查失败，跳转登录页
+        next({ path: '/login', query: { redirect: to.fullPath } })
+        return
+      }
 
-    if (to.meta.requiresAdmin && !isAdmin()) {
-      next('/')
-      return
-    }
-
-    const pagePerm = to.meta.pagePermission as string | undefined
-    if (pagePerm && !isAdmin()) {
-      const perms = getStoredPermissions()
-      if (!perms.includes(pagePerm)) {
-        next('/')
+      // 再次检查登录状态
+      if (!authStore.isLoggedIn) {
+        next({ path: '/login', query: { redirect: to.fullPath } })
         return
       }
     }
