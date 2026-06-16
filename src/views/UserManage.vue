@@ -278,7 +278,7 @@ const handleDelete = async (row: UserManageItem) => {
 const handlePermissions = async (row: UserManageItem) => {
   permUser.value = row
   if (row.role === 'ADMIN') {
-    permChecked.value = PAGE_PERMISSIONS.map(p => p.key)
+    permChecked.value = PAGE_PERMISSIONS.map((p: { key: string }) => p.key)
   } else {
     permChecked.value = []
     try {

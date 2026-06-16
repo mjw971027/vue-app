@@ -1,89 +1,103 @@
 /**
  * ============================================================
  * 文件：src/stores/auth.ts
- * 作用：Pinia 认证与权限状态管理
+ * 作用：Pinia 认证与权限状态管理（Session 模式）
+ * 说明：
+ *   - 登录成功后调用 /auth/me 获取用户信息并缓存
+ *   - 真正的认证凭证由浏览器管理的 Cookie 携带
  * ============================================================
  */
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import {
-  setToken as saveToken,
-  getToken,
-  getRefreshToken,
-  removeToken,
+  setAuthUser,
+  getAuthUser,
+  clearAuth,
   isAuthenticated,
-  getUserInfoFromToken,
   isAdmin as checkIsAdmin,
-  setPagePermissions as savePagePerms,
   getStoredPermissions,
+  setPagePermissions,
   clearPermissions,
-  refreshPermissions as fetchPermissions,
 } from '../utils/auth'
-import { login as loginApi, logout as logoutApi } from '../api/auth'
+import type { AuthUser } from '../utils/auth'
+import { login as loginApi, logout as logoutApi, getCurrentUser } from '../api/auth'
 import type { LoginParams } from '../api/auth'
 import router from '../router'
 
 export const useAuthStore = defineStore('auth', () => {
-  // ===== 状态 =====
-  const token = ref<string | null>(getToken())
+  // ===== 状态（初始值从本地缓存读取） =====
   const isLoggedIn = ref(isAuthenticated())
   const isAdminUser = ref(checkIsAdmin())
+  const currentUser = ref<AuthUser | null>(getAuthUser())
+  const currentUsername = ref(currentUser.value?.username || '')
   const pagePerms = ref<string[]>(isLoggedIn.value ? getStoredPermissions() : [])
-  const currentUsername = ref(
-    isLoggedIn.value ? getUserInfoFromToken()?.sub || '' : '',
-  )
-
-  // ===== 计算属性 =====
-  const authHeader = computed(() => (token.value ? `Bearer ${token.value}` : null))
 
   // ===== 方法 =====
 
-  /** 登录 */
+  /** 登录：调用后端登录接口 → 拉取用户信息 → 写入本地缓存 */
   async function login(params: LoginParams) {
     const res = await loginApi(params)
-    token.value = getToken()
+    // 登录成功，拉取用户信息
+    try {
+      const userRes = await getCurrentUser()
+      const user: AuthUser = (userRes as any).data || (userRes as any) || {}
+      if (!user.username) user.username = params.username
+      setAuthUser(user)
+      currentUser.value = user
+      currentUsername.value = user.username || ''
+      isAdminUser.value = checkIsAdmin()
+      pagePerms.value = getStoredPermissions()
+    } catch {
+      // 若 /auth/me 暂不可用，仅使用登录接口返回
+      const fallback: AuthUser = (res as any).data || { username: params.username }
+      if (!fallback.username) fallback.username = params.username
+      setAuthUser(fallback)
+      currentUser.value = fallback
+      currentUsername.value = fallback.username || ''
+    }
     isLoggedIn.value = true
-    isAdminUser.value = checkIsAdmin()
-    currentUsername.value = getUserInfoFromToken()?.sub || ''
-    await fetchPermissions()
-    pagePerms.value = getStoredPermissions()
     return res
   }
 
-  /** 退出登录 */
+  /** 退出登录：通知后端 → 清空本地缓存 → 跳登录页 */
   async function logout() {
     try {
       await logoutApi()
-    } catch { /* 忽略 API 错误 */ }
-    removeToken()
+    } catch {
+      /* 忽略 API 错误，仍需清除本地缓存 */
+    }
+    clearAuth()
     clearPermissions()
-    token.value = null
+    currentUser.value = null
+    currentUsername.value = ''
     isLoggedIn.value = false
     isAdminUser.value = false
-    currentUsername.value = ''
     pagePerms.value = []
     router.push('/login')
   }
 
-  /** 刷新认证状态（路由切换时调用） */
-  function refreshAuth() {
+  /** 刷新认证状态（从本地缓存 + 可选重新调用 /auth/me） */
+  async function refreshAuth() {
     isLoggedIn.value = isAuthenticated()
     if (isLoggedIn.value) {
-      token.value = getToken()
+      const u = getAuthUser()
+      currentUser.value = u
+      currentUsername.value = u?.username || ''
       isAdminUser.value = checkIsAdmin()
-      currentUsername.value = getUserInfoFromToken()?.sub || ''
       pagePerms.value = getStoredPermissions()
-      fetchPermissions().then(() => {
-        pagePerms.value = getStoredPermissions()
-      })
+      try {
+        const res = await getCurrentUser()
+        const fresh: AuthUser = (res as any).data || (res as any) || {}
+        if (fresh && (fresh.username || fresh.role)) {
+          setAuthUser(fresh)
+          currentUser.value = fresh
+          currentUsername.value = fresh.username || currentUsername.value
+          isAdminUser.value = checkIsAdmin()
+        }
+      } catch {
+        /* /auth/me 失败不主动退出，交由 request 拦截器处理 401 */
+      }
     }
-  }
-
-  /** 刷新 Token 并存储 */
-  function refreshToken(newToken: string, tokenType = 'Bearer', expiresIn = 86400) {
-    saveToken({ token: newToken, tokenType, expiresIn })
-    token.value = newToken
-    isLoggedIn.value = true
   }
 
   /** 检查页面权限 */
@@ -92,23 +106,31 @@ export const useAuthStore = defineStore('auth', () => {
     return pagePerms.value.includes(key)
   }
 
-  /** 获取存储的 refreshToken（供 axios 拦截器使用） */
-  function getStoredRefreshToken(): string | null {
-    return getRefreshToken()
+  /** 更新用户缓存（供业务侧手动调用，如用户修改资料后） */
+  function updateUser(user: AuthUser) {
+    setAuthUser(user)
+    currentUser.value = user
+    currentUsername.value = user.username || currentUsername.value
+    isAdminUser.value = checkIsAdmin()
+  }
+
+  /** 更新页面权限 */
+  function updatePermissions(perms: string[]) {
+    setPagePermissions(perms)
+    pagePerms.value = perms
   }
 
   return {
-    token,
     isLoggedIn,
     isAdminUser,
-    pagePerms,
+    currentUser,
     currentUsername,
-    authHeader,
+    pagePerms,
     login,
     logout,
     refreshAuth,
-    refreshToken,
     hasPerm,
-    getStoredRefreshToken,
+    updateUser,
+    updatePermissions,
   }
 })

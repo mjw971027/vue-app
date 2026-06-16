@@ -204,7 +204,6 @@ import { ref, reactive, onMounted } from 'vue'
 import { Search, Plus, Delete, RefreshLeft, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../api/request'
-import { getToken } from '../utils/auth'
 import ComponentsCreate from './ComponentsCreate.vue'
 
 // 搜索表单
@@ -472,8 +471,8 @@ const handlePrint = () => {
     return
   }
 
-  const token = getToken()
-  window.open(`/api/components/printPdf?billNo=${currentRow.value.billNo}&token=${encodeURIComponent(token || '')}`)
+  // Session 模式：浏览器自动携带 Cookie，URL 中无需带 token
+  window.open(`/api/components/printPdf?billNo=${currentRow.value.billNo}`)
 }
 
 /** 查看详情 */

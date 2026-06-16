@@ -1,185 +1,205 @@
 <!--
   ============================================================
   文件：src/App.vue
-  作用：Vue 应用的根组件（侧边栏布局 + 认证状态管理）
+  作用：PVM 系统根组件 - 侧边栏布局 + 路由出口
   ============================================================
 -->
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getToken, getUserInfoFromToken } from './utils/auth'
+import { isAdmin } from './utils/auth'
 import { useAuthStore } from './stores/auth'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
-const showTokenModal = ref(false)
-const tokenInfo = ref('')
 const activeIndex = ref('/')
-const isAuthPage = computed(() => ['/login', '/register'].includes(route.path))
+const isAuthPage = computed(() => route.path === '/login')
 
-// 组件挂载时 + 路由变化时刷新认证状态
-auth.refreshAuth()
-watch(() => route.path, (newPath) => {
-  auth.refreshAuth()
-  activeIndex.value = newPath
-})
+// 路由变化时刷新活跃项
+watch(
+  () => route.path,
+  (newPath) => {
+    activeIndex.value = newPath
+  },
+  { immediate: true },
+)
 
 /** 退出登录 */
 const handleLogout = async () => {
   await auth.logout()
 }
 
-/** 显示 Token 信息 */
-const showTokenInfo = () => {
-  const token = getToken()
-  if (!token) {
-    tokenInfo.value = '未找到 Token'
-  } else {
-    const userInfo = getUserInfoFromToken()
-    tokenInfo.value = `Token: ${token}\n\n解析后的用户信息:\n${userInfo ? JSON.stringify(userInfo, null, 2) : '解析失败'}`
-  }
-  showTokenModal.value = true
-}
-
-/** 关闭 Token 弹窗 */
-const closeTokenModal = () => {
-  showTokenModal.value = false
-  tokenInfo.value = ''
-}
-
-/** 复制 Token */
-const copyToken = async () => {
-  const token = getToken()
-  if (token) {
-    try {
-      await window.navigator.clipboard.writeText(token)
-      ElMessage.success('Token 已复制到剪贴板')
-    } catch {
-      ElMessage.error('复制失败')
-    }
-  }
-}
-
 /** 菜单跳转 */
 const handleMenuSelect = (index: string) => {
   router.push(index)
 }
+
+/** 当前登录用户名 */
+const currentUsername = computed(() => {
+  const username = auth.currentUsername
+  return username || (isAdmin() ? '系统管理员' : '用户')
+})
 </script>
 
 <template>
   <div id="app">
-    <!-- 侧边栏布局（非登录页面） -->
-    <template v-if="!isAuthPage">
-      <div class="app-layout">
-        <aside class="app-sidebar">
+    <!-- 登录/注册页面：不需要侧边栏 -->
+    <router-view v-if="isAuthPage" />
+
+    <!-- 其他页面：侧边栏布局 -->
+    <div v-else class="app-layout">
+      <!-- ========== 左侧菜单 ========== -->
+      <aside class="app-sidebar">
         <el-menu
-          mode="vertical"
           :default-active="activeIndex"
           class="sidebar-menu"
+          mode="vertical"
           @select="handleMenuSelect"
         >
-          <el-menu-item index="/" class="logo-item">
+          <!-- LOGO / 项目名 -->
+          <div class="app-logo">
+            <el-icon :size="24" color="#6366f1"><DataBoard /></el-icon>
+            <span class="logo-title">PVM 管理系统</span>
+          </div>
+
+          <el-menu-item index="/">
             <el-icon><HomeFilled /></el-icon>
-            <span>MyVueApp</span>
+            <span>首页</span>
           </el-menu-item>
 
           <el-divider class="menu-divider" />
 
-          <el-menu-item v-if="auth.hasPerm('page1')" index="/page1">
-            <el-icon><Document /></el-icon>
-            <span>页面一</span>
-          </el-menu-item>
-          <el-menu-item v-if="auth.hasPerm('page2')" index="/page2">
-            <el-icon><DataAnalysis /></el-icon>
-            <span>页面二</span>
-          </el-menu-item>
-          <el-menu-item v-if="auth.hasPerm('page3')" index="/page3">
-            <el-icon><Setting /></el-icon>
-            <span>页面三</span>
-          </el-menu-item>
-          <el-menu-item v-if="auth.hasPerm('page4')" index="/page4">
-            <el-icon><Files /></el-icon>
-            <span>工装申请</span>
-          </el-menu-item>
-          <el-menu-item v-if="auth.isAdminUser" index="/users">
-            <el-icon><User /></el-icon>
-            <span>用户管理</span>
-          </el-menu-item>
+          <!-- ========== 业务模块 ========== -->
+          <el-sub-menu index="business" :default-openeds="['business']">
+            <template #title>
+              <el-icon><Document /></el-icon>
+              <span>业务模块</span>
+            </template>
+
+            <el-menu-item index="/pvm/detail">
+              <el-icon><Files /></el-icon>
+              <span>报审申请</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/search">
+              <el-icon><Search /></el-icon>
+              <span>设计评标项目查询</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/meeting">
+              <el-icon><Calendar /></el-icon>
+              <span>会议管理</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/meeting-list">
+              <el-icon><List /></el-icon>
+              <span>会议编号列表</span>
+            </el-menu-item>
+          </el-sub-menu>
+
+          <!-- ========== 配置模块 ========== -->
+          <el-sub-menu index="manage">
+            <template #title>
+              <el-icon><Setting /></el-icon>
+              <span>配置模块</span>
+            </template>
+
+            <el-menu-item index="/pvm/manage/type">
+              <el-icon><Collection /></el-icon>
+              <span>评审会类型</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/manage/approve">
+              <el-icon><Connection /></el-icon>
+              <span>审批节点</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/manage/admin">
+              <el-icon><UserFilled /></el-icon>
+              <span>评审会管理员</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/applicant">
+              <el-icon><Avatar /></el-icon>
+              <span>申请人配置</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/authority">
+              <el-icon><Key /></el-icon>
+              <span>报审申请权限</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/score">
+              <el-icon><TrendCharts /></el-icon>
+              <span>供应商评分</span>
+            </el-menu-item>
+            <el-menu-item index="/pvm/sort">
+              <el-icon><Sort /></el-icon>
+              <span>供应商排序</span>
+            </el-menu-item>
+          </el-sub-menu>
+
+          <!-- ========== 系统管理 ========== -->
+          <el-sub-menu index="system" v-if="isAdmin()">
+            <template #title>
+              <el-icon><Tools /></el-icon>
+              <span>系统管理</span>
+            </template>
+            <el-menu-item index="/users">
+              <el-icon><User /></el-icon>
+              <span>用户管理</span>
+            </el-menu-item>
+          </el-sub-menu>
         </el-menu>
 
+        <!-- 底部用户信息 -->
         <div class="sidebar-footer">
-          <template v-if="auth.isLoggedIn">
-            <div class="user-info">
-              <el-icon><User /></el-icon>
-              <span class="user-name">{{ auth.currentUsername }}</span>
-              <el-tag
-                v-if="auth.isAdminUser"
-                size="small"
-                type="warning"
-                effect="dark"
-                round
-              >
-                ADMIN
+          <div class="user-info">
+            <el-avatar :size="32" class="user-avatar">
+              {{ (currentUsername as string).slice(0, 1).toUpperCase() }}
+            </el-avatar>
+            <div class="user-text">
+              <div class="user-name">{{ currentUsername }}</div>
+              <el-tag v-if="isAdmin()" size="small" type="warning" effect="dark" round>
+                管理员
               </el-tag>
+              <span v-else class="user-role-tag">普通用户</span>
             </div>
-            <el-divider class="footer-divider" />
-            <el-button type="primary" link class="sidebar-btn" @click="showTokenInfo">
-              <el-icon><Key /></el-icon>
-              <span>Token</span>
-            </el-button>
-            <el-button type="danger" link class="sidebar-btn" @click="handleLogout">
-              <el-icon><SwitchButton /></el-icon>
-              <span>退出</span>
-            </el-button>
-          </template>
-          <template v-else>
-            <el-menu-item index="/login">
-              <el-icon><User /></el-icon>
-              <span>登录</span>
-            </el-menu-item>
-          </template>
+          </div>
+          <el-button type="danger" link class="sidebar-btn" @click="handleLogout">
+            <el-icon><SwitchButton /></el-icon>
+            <span>退出登录</span>
+          </el-button>
         </div>
       </aside>
 
+      <!-- ========== 主内容区 ========== -->
       <main class="main-content">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </main>
-      </div>
-    </template>
-
-    <router-view v-else />
-
-    <!-- Token 信息弹窗 -->
-    <el-dialog v-model="showTokenModal" title="当前 Token 信息" width="600px">
-      <el-input type="textarea" :model-value="tokenInfo" :rows="10" readonly />
-      <template #footer>
-        <el-button @click="copyToken">复制 Token</el-button>
-        <el-button type="primary" @click="closeTokenModal">关闭</el-button>
-      </template>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <style lang="scss">
 /* ===== 全局样式重置 ===== */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
-  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
   background: #f5f6fa;
   color: #18191c;
 }
 
-#app { min-height: 100vh; }
+#app {
+  min-height: 100vh;
+}
 
 /* ===== 侧边栏 ===== */
-$sidebar-width: 220px;
-
 .app-sidebar {
-  width: $sidebar-width;
+  width: 240px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -189,77 +209,78 @@ $sidebar-width: 220px;
   left: 0;
   top: 0;
   z-index: 100;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
 }
 
-.logo-item {
-  font-weight: 700;
-  font-size: 16px;
-  color: #6366f1 !important;
-  height: 56px !important;
-  line-height: 56px !important;
+.app-logo {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-bottom: 1px solid #e8ecf4;
 
-  .el-icon { font-size: 20px; }
-}
-
-.menu-divider {
-  margin: 0 12px;
-  border-color: #f0f0f0;
+  .logo-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+  }
 }
 
 .sidebar-menu {
   flex: 1;
   border-right: none !important;
-  padding-top: 0;
+  padding: 8px;
+}
 
-  .el-menu-item {
-    height: 44px;
-    line-height: 44px;
-    margin: 2px 8px;
-    border-radius: 8px;
-    font-size: 14px;
-
-    &.is-active {
-      background: #eeefff !important;
-      color: #6366f1 !important;
-    }
-
-    &:hover { background: #f5f6ff !important; }
-  }
+.menu-divider {
+  margin: 4px 0;
+  border-color: #f0f0f0;
 }
 
 /* ===== 侧边栏底部 ===== */
 .sidebar-footer {
-  border-top: 1px solid #f0f0f0;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  border-top: 1px solid #e8ecf4;
+  padding: 12px;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   padding: 8px 12px;
-  font-size: 14px;
-  color: #303133;
+  margin-bottom: 8px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
 
-  .el-icon { font-size: 16px; color: #909399; }
+.user-avatar {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .user-name {
-  flex: 1;
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 600;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.footer-divider {
-  margin: 4px 8px;
-  border-color: #f0f0f0;
+.user-role-tag {
+  font-size: 11px;
+  color: #6b7280;
 }
 
-.sidebar-footer .sidebar-btn {
+.sidebar-btn {
   width: 100%;
   justify-content: flex-start;
   padding: 10px 16px;
@@ -268,23 +289,24 @@ $sidebar-width: 220px;
   display: flex;
   align-items: center;
   gap: 8px;
-
-  &:hover { background: #f5f6ff; }
-}
-
-.sidebar-footer .el-menu-item {
-  height: 40px;
-  line-height: 40px;
-  border-radius: 8px;
-  font-size: 14px;
 }
 
 /* ===== 主内容区 ===== */
 .main-content {
-  margin-left: $sidebar-width;
+  margin-left: 240px;
   flex: 1;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding: 20px;
+  background: #f5f6fa;
+}
+
+/* ===== 页面切换动画 ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

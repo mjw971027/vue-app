@@ -428,11 +428,10 @@
 
 <script setup lang="ts">
 /* eslint-disable no-undef */
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Delete, Upload, Document, List, FolderOpened, Checked } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../api/request'
-import { getAuthHeader, getToken } from '../utils/auth'
 
 // Props
 const props = defineProps<{
@@ -494,11 +493,8 @@ const uploadData = reactive({
   billId: '',
   billNo: ''
 })
-/** 注入 Authorization 请求头 */
-const uploadHeaders = computed(() => {
-  const auth = getAuthHeader()
-  return auth ? { Authorization: auth } : {}
-})
+/** Session 模式：浏览器自动携带 Cookie，无需手动注入 header */
+const uploadHeaders = computed(() => ({}))
 
 /** 初始化 */
 onMounted(() => {
@@ -665,7 +661,7 @@ const beforeUpload = (file: File) => {
 }
 
 /** 上传成功 */
-const handleUploadSuccess = (response: any) => {
+const handleUploadSuccess = (_: any) => {
   ElMessage.success('上传成功')
   uploadDialogVisible.value = false
   loadData()
@@ -706,8 +702,8 @@ const handleFileSelectionChange = (selection: Record<string, unknown>[]) => {
 
 /** 下载文件 */
 const handleDownloadFile = (row: Record<string, unknown>) => {
-  const token = getToken()
-  window.open(`/api/components/fileDownload?fileId=${row.fileId}&token=${token}`)
+  // Session 模式：浏览器自动携带 Cookie，URL 中无需带 token
+  window.open(`/api/components/fileDownload?fileId=${row.fileId}`)
 }
 
 /** 保存 */

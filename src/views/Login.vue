@@ -9,7 +9,7 @@ import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { User, Key } from '@element-plus/icons-vue'
+import { User, Key, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
 import { isAuthenticated } from '../utils/auth'
 
@@ -88,11 +88,6 @@ if (isAuthenticated()) {
           </el-button>
         </el-form-item>
       </el-form>
-
-      <div class="login-footer">
-        没有账号？
-        <el-button link type="primary" @click="router.push('/register')">立即注册</el-button>
-      </div>
     </el-card>
   </div>
 </template>
